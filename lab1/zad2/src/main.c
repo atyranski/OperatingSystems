@@ -8,6 +8,7 @@
 #define RETURN_BAD_ARGUMENT 2;
 
 char* tempPath = "src/temp.txt";
+char* raportPath = "out/raport2.txt";
 
 void error(char* type, char* message){
     printf("\033[1;31m");
@@ -42,16 +43,34 @@ double timeDifference(clock_t time1, clock_t time2){
     return ((double) (time2 - time1) / sysconf(_SC_CLK_TCK));
 }
 
-void getTimeResults(clock_t start, clock_t end, struct tms* time_start, struct tms* time_end, char* operationName){
-    printf("--- Operation %s ---\n", operationName);
-    printf("[Real time]: %f\n", timeDifference(start, end));
-    printf("[User time]: %f\n", timeDifference(time_start->tms_utime, time_end->tms_utime));
+void printTimeResults(clock_t start, clock_t end, struct tms* time_start, struct tms* time_end, int countedFiles){
+    printf("--- Operation time summary ---\n");
+    printf("[Files counted]: %d\n", countedFiles);
+    printf("[Real time]:   %f\n", timeDifference(start, end));
+    printf("[User time]:   %f\n", timeDifference(time_start->tms_utime, time_end->tms_utime));
     printf("[System time]: %f\n", timeDifference(time_start->tms_stime, time_end->tms_stime));
+    printf("==============================\n");
     // (...)
+}
+
+int saveTimeResults(clock_t start, clock_t end, struct tms* time_start, struct tms* time_end, int countedFiles){
+    FILE* raport = fopen(raportPath, "a");
+
+    fprintf(raport, "--- Operation time summary ---\n");
+    fprintf(raport, "[Files counted]: %d\n", countedFiles);
+    fprintf(raport, "[Real time]:   %f\n", timeDifference(start, end));
+    fprintf(raport, "[User time]:   %f\n", timeDifference(time_start->tms_utime, time_end->tms_utime));
+    fprintf(raport, "[System time]: %f\n", timeDifference(time_start->tms_stime, time_end->tms_stime));
+    fprintf(raport, "==============================\n");
+    fclose(raport);
+
+    return RETURN_CODE_SUCCESS;
 }
 
 int main(int argc, char **argv){
     WC_Table* table;
+
+    int countedFiles = 0;
 
     int now = 0;
     struct tms * tms[argc];
@@ -82,9 +101,6 @@ int main(int argc, char **argv){
             sprintf(message, "blocks: %s | amount: %d | capacity: %d", table->blocks, table->amount, table->capacity);
             printCheck("Check", message);
 
-            time[now] = times(tms[now]);
-            // getTimeResults(time[now-1], time[now], tms[now-1], tms[now], argv[i]);
-
             i += 2;
 
             continue;
@@ -114,10 +130,9 @@ int main(int argc, char **argv){
 
                 sprintf(message, "index: %d | lines: %d | words: %d | chars: %d", placed, table->blocks[placed].lines, table->blocks[placed].words, table->blocks[placed].chars);
                 printCheck("Check", message);
-            }
 
-            time[now] = times(tms[now]);
-            // getTimeResults(time[now-1], time[now], tms[now-1], tms[now], argv[i]);
+                countedFiles++;
+            }
 
             i = i + 1 + amount;
 
@@ -143,13 +158,10 @@ int main(int argc, char **argv){
             printInfo("Operation", "removing block at index:", message);
             removeBlock(table, index);
 
-            sprintf(message, "\nprev at index %d:\nlines: %d | words: %d | chars: %d\nnow at index %d:\nlines: %d | words: %d | chars:", 
+            sprintf(message, "\nprev at index %d:\nlines: %d | words: %d | chars: %d\nnow at index %d:\nlines: %d | words: %d | chars: %d", 
                 index, removedBlock->lines, removedBlock->words, removedBlock->chars, 
                 index, table->blocks[index].lines, table->blocks[index].words, table->blocks[index].chars);
             printCheck("Check", message);
-
-            time[now] = times(tms[now]);
-            // getTimeResults(time[now-1], time[now], tms[now-1], tms[now], argv[i]);
 
             i += 2;
 
@@ -174,6 +186,12 @@ int main(int argc, char **argv){
         error("BAD_CODE_ARGUMENT", "name of command is invalid");
         return RETURN_BAD_ARGUMENT;   
     }
+
+    time[now] = times(tms[now]);
+    printTimeResults(time[now-1], time[now], tms[now-1], tms[now], countedFiles);
+    saveTimeResults(time[now-1], time[now], tms[now-1], tms[now], countedFiles);
+
+    free(table);
 
     return RETURN_CODE_SUCCESS;
 }

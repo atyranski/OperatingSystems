@@ -62,7 +62,6 @@ int countFile(WC_Table* table, const char* filePath, const char* tempPath){
 
 int removeBlock(WC_Table* table, int index){
     if(index > -1 && index < table->amount){
-        free(&table->blocks[index]);
 
         for(int i=index+1; i<table->amount; i++){
             table->blocks[i-1] = table->blocks[i];
