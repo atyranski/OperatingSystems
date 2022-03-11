@@ -11,15 +11,16 @@ char* tempPath = "src/temp.txt";
 
 void error(char* type, char* message){
     printf("\033[1;31m");
-    printf("[%s] %s\n", type, message);
+    printf("[%s] ", type);
     printf("\033[0m");
+    printf("%s\n", message);
 }
 
 void printInfo(char* type, char* message, char* parameter){
     printf("\033[0;32m");
     printf("[%s] ", type);
     printf("\033[0m");
-    printf("%s %d\n", message, parameter);
+    printf("%s %s\n", message, parameter);
 }
 
 void printCheck(char* type, char* message){
@@ -73,8 +74,9 @@ int main(int argc, char **argv){
             
             int size = atoi(argv[i+1]);
             char* message[1000];
+            sprintf(message, "%d", size);
 
-            printInfo("Operation", "creating table of size: ", size);
+            printInfo("Operation", "creating table of size: ", message);
             table = createTable(size);
 
             sprintf(message, "blocks: %s | amount: %d | capacity: %d", table->blocks, table->amount, table->capacity);
@@ -133,14 +135,15 @@ int main(int argc, char **argv){
             char* message[1000];
 
             WC_Block* removedBlock = calloc(1, sizeof(WC_Block));
-            removedBlock->lines = table->blocks[index].lines
-            removedBlock->words = table->blocks[index].words
-            removedBlock->chars = table->blocks[index].chars
+            removedBlock->lines = table->blocks[index].lines;
+            removedBlock->words = table->blocks[index].words;
+            removedBlock->chars = table->blocks[index].chars;
 
-            printInfo("Operation", "removing block at index:", index);
+            sprintf(message, "%d", index);
+            printInfo("Operation", "removing block at index:", message);
             removeBlock(table, index);
 
-            sprintf(message, "prev at index %d:\nlines: %d | words: %d | chars: %d\nnow at index %d:\nlines: %d | words: %d | chars:", 
+            sprintf(message, "\nprev at index %d:\nlines: %d | words: %d | chars: %d\nnow at index %d:\nlines: %d | words: %d | chars:", 
                 index, removedBlock->lines, removedBlock->words, removedBlock->chars, 
                 index, table->blocks[index].lines, table->blocks[index].words, table->blocks[index].chars);
             printCheck("Check", message);
@@ -155,9 +158,13 @@ int main(int argc, char **argv){
 
         if(strcmp(argv[i], "print_table") == 0){
             printInfo("Operation", "printing table", "");
-            printf("%d\n", table->blocks[0].lines);
-            printf("%d\n", table->blocks[0].words);
-            printf("%d\n", table->blocks[0].chars);
+            printf("Table   | amount: %d capacity: %d\n", table->amount, table->capacity);
+
+            for(int b=0; b<table->amount; b++){
+                printf("Block#%d | line: %d words: %d chars: %d\n", b, 
+                    table->blocks[b].lines, table->blocks[b].words, table->blocks[b].chars);
+            }
+            printf("\n");
 
             i += 1;
 
