@@ -24,4 +24,4 @@ clean:
 
 run:
 	@echo ----TEST------
-	./main 7 create_table 3 wc_files $(LARGE_FILE_PATH) $(MEDIUM_FILE_PATH) $(SMALL_FILE_PATH) print_table remove_block 1 print_table wc_files $(MEDIUM_FILE_PATH) print_table
+	./main 3 create_table 10 wc_files $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) $(LARGE_FILE_PATH) print_table
