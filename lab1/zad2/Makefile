@@ -9,6 +9,10 @@ SMALL_FILE_PATH = texts/small.txt
 MEDIUM_FILE_PATH = texts/medium.txt
 LARGE_FILE_PATH = texts/large.txt
 
+# OP = -O0
+# OP = -Os
+# OP = -O1
+
 static:
 	$(CC) $(CFLAGS) $(LIB_PATH)
 	ar rcs libwcutils.a wcutils.o
@@ -17,11 +21,20 @@ static:
 shared:
 	$(CC) -fPIC -c $(LIB_PATH)
 	$(CC) -shared -fPIC -o libwcutils.so wcutils.o
-	$(CC) $(MAIN_PATH) -lwcutils -L ./ -o main
+	$(CC) $(MAIN_PATH) -w -lwcutils -L ./ -o main
 
 clean:
 	for file in $(CLEAN_EXT); do rm -f *.$$file; done
+	rm -f main
+	rm -f src/temp.txt
+	rm -f out/raport2.txt
 
 run:
-	@echo ----TEST------
+	@echo ----------- TEST_01 --------
+	./main 3 create_table 3 wc_files $(LARGE_FILE_PATH) $(MEDIUM_FILE_PATH) $(SMALL_FILE_PATH) print_table
+
+	@echo ----------- TEST_01 --------
+	./main 5 create_table 3 wc_files $(LARGE_FILE_PATH) $(MEDIUM_FILE_PATH) $(SMALL_FILE_PATH) print_table remove_block 0 print_table
+
+	@echo ----------- TEST_02 --------
 	./main 9 create_table 3 wc_files $(LARGE_FILE_PATH) $(MEDIUM_FILE_PATH) $(SMALL_FILE_PATH) print_table remove_block 0 print_table wc_files $(LARGE_FILE_PATH) $(MEDIUM_FILE_PATH) print_table remove_block 1 print_table

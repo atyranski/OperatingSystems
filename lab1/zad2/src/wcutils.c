@@ -26,15 +26,16 @@ int removeTable(WC_Table* table){
 
 // Operations
 int countFile(WC_Table* table, const char* filePath, const char* tempPath){
-    char command[1000];
+    char wcCommand[1000];
+    char clearCommand[1000];
     
     // Wykonanie komendy wc na podanym pliku i zapisanie wyniku komendy do pliku o sciezce tempPath
-    strcpy(command, "wc -w -l -m < ");
-    strcat(command, filePath);
-    strcat(command, " >> ");
-    strcat(command, tempPath);
+    strcpy(wcCommand, "wc -w -l -m < ");
+    strcat(wcCommand, filePath);
+    strcat(wcCommand, " >> ");
+    strcat(wcCommand, tempPath);
     
-    system(command);
+    system(wcCommand);
 
     FILE* file = fopen(tempPath, "r");
 
@@ -59,7 +60,12 @@ int countFile(WC_Table* table, const char* filePath, const char* tempPath){
     // printf("%d %d %d\n", block->lines, block->words, block->chars);
 
     // Just to clear the temp file
-    fclose(fopen(tempPath, "w"));
+    // fclose(fopen(tempPath, "w"));
+
+    strcpy(clearCommand, "rm -f ");
+    strcat(clearCommand, tempPath);
+
+    system(clearCommand);
 
     return index;
 }
