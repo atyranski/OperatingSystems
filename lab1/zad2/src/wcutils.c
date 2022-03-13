@@ -8,14 +8,14 @@ WC_Table* createTable(int size){
 
     table->amount = 0;
     table->capacity = size;
-    table->blocks = calloc(table->capacity, sizeof(WC_Block));
+    table->blocks = calloc(table->capacity, sizeof(WC_Block*));
 
     return table;
 }
 
 int removeTable(WC_Table* table){
     for(int i=0; i<table->amount; i++){
-        free(&table->blocks[i]);
+        free(table->blocks[i]);
     }
 
     free(table->blocks);
@@ -27,7 +27,7 @@ int removeTable(WC_Table* table){
 // Operations
 int countFile(WC_Table* table, const char* filePath, const char* tempPath){
     char command[1000];
-
+    
     // Wykonanie komendy wc na podanym pliku i zapisanie wyniku komendy do pliku o sciezce tempPath
     strcpy(command, "wc -w -l -m < ");
     strcat(command, filePath);
@@ -50,9 +50,13 @@ int countFile(WC_Table* table, const char* filePath, const char* tempPath){
         table->blocks = realloc(table->blocks, table->capacity * sizeof(WC_Block));
     }
 
-    WC_Block* block = &table->blocks[index];
-    fscanf(file, " %d %d %d", &block->lines, &block->words, &block->chars);
+    WC_Block* block = calloc(1, sizeof(WC_Block*));
+    fscanf(file, " %d %d %d", &(block)->lines, &(block)->words, &(block)->chars);
     fclose(file);
+
+    table->blocks[index] = block;
+
+    // printf("%d %d %d\n", block->lines, block->words, block->chars);
 
     // Just to clear the temp file
     fclose(fopen(tempPath, "w"));
@@ -62,6 +66,8 @@ int countFile(WC_Table* table, const char* filePath, const char* tempPath){
 
 int removeBlock(WC_Table* table, int index){
     if(index > -1 && index < table->amount){
+
+        free(table->blocks[index]);
 
         for(int i=index+1; i<table->amount; i++){
             table->blocks[i-1] = table->blocks[i];

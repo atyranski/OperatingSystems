@@ -48,26 +48,31 @@ int isNumber(char* s){
     return 0;
 }
 
-double getDifference(clock_t time1, clock_t time2){
-    return ((double) (time2 - time1) / sysconf(_SC_CLK_TCK));
-}
+void printTimeResults(char* title, struct tms* tms_start, struct tms* tms_end){
+    double realTime = (double) (tms_end - tms_start) / sysconf(_SC_CLK_TCK);
+    double userTime = (double) (tms_end->tms_cutime - tms_start->tms_cutime) / sysconf(_SC_CLK_TCK);
+    double systemTime = (double) (tms_end->tms_cstime - tms_start->tms_cstime) / sysconf(_SC_CLK_TCK);
 
-void printTimeResults(char* title, Time_Summary* processTimes){
+    // printf("r: %f\nu: %f\ns: %f\n", realTime, userTime, systemTime);
+
     printf("--- %s execution time ---\n", title);
-    printf("[Real time]:     %fs\n", getDifference(processTimes->r_start, processTimes->r_end));
-    printf("[User time]:     %fs\n", getDifference(processTimes->u_start, processTimes->u_end));
-    printf("[System time]:   %fs\n", getDifference(processTimes->s_start, processTimes->s_end));
+    printf("[Real time]:     %f\n", realTime);
+    printf("[User time]:     %f\n", userTime);
+    printf("[System time]:     %f\n", systemTime);
     printf("==============================\n");
-    // (...)
 }
 
-int saveTimeResults(clock_t start, clock_t end, struct tms* time_start, struct tms* time_end){
+int saveTimeResults(char* title, struct tms* tms_start, struct tms* tms_end){
     FILE* raport = fopen(raportPath, "a");
 
-    fprintf(raport, "--- Operation time summary ---\n");
-    fprintf(raport, "[Real time]:   %f\n", getDifference(start, end));
-    fprintf(raport, "[User time]:   %f\n", getDifference(time_start->tms_utime, time_end->tms_utime));
-    fprintf(raport, "[System time]: %f\n", getDifference(time_start->tms_stime, time_end->tms_stime));
+    double realTime = (double) (tms_end - tms_start) / sysconf(_SC_CLK_TCK);
+    double userTime = (double) (tms_end->tms_cutime - tms_start->tms_cutime) / sysconf(_SC_CLK_TCK);
+    double systemTime = (double) (tms_end->tms_cstime - tms_start->tms_cstime) / sysconf(_SC_CLK_TCK);
+
+    fprintf(raport, "--- %s execution time ---\n", title);
+    fprintf(raport, "[Real time]:   %f\n", realTime);
+    fprintf(raport, "[User time]:   %f\n", userTime);
+    fprintf(raport, "[System time]: %f\n", systemTime);
     fprintf(raport, "==============================\n");
     fclose(raport);
 
@@ -84,8 +89,6 @@ int main(int argc, char **argv){
     times(tms_start);
 
     for(int i=2; i<argc; i){
-        // time[now] = times(tms[now]);
-        // now += 1;
 
         // Handle "create_table x" command
         if(strcmp(argv[i], "create_table") == 0){
@@ -131,7 +134,10 @@ int main(int argc, char **argv){
 
                 int placed = countFile(table, filePath, tempPath);
 
-                sprintf(message, "index: %d | lines: %d | words: %d | chars: %d", placed, table->blocks[placed].lines, table->blocks[placed].words, table->blocks[placed].chars);
+                WC_Block* block = table->blocks[placed];
+                // printf("%d\n", block->lines);
+
+                sprintf(message, "index: %d | lines: %d | words: %d | chars: %d", placed, block->lines, block->words, block->chars);
                 printCheck("Check", message);
             }
 
@@ -151,9 +157,9 @@ int main(int argc, char **argv){
             char* message[1000];
 
             WC_Block* removedBlock = calloc(1, sizeof(WC_Block));
-            removedBlock->lines = table->blocks[index].lines;
-            removedBlock->words = table->blocks[index].words;
-            removedBlock->chars = table->blocks[index].chars;
+            removedBlock->lines = table->blocks[index]->lines;
+            removedBlock->words = table->blocks[index]->words;
+            removedBlock->chars = table->blocks[index]->chars;
 
             sprintf(message, "%d", index);
             printInfo("Operation", "removing block at index:", message);
@@ -161,7 +167,7 @@ int main(int argc, char **argv){
 
             sprintf(message, "\nprev at index %d:\nlines: %d | words: %d | chars: %d\nnow at index %d:\nlines: %d | words: %d | chars: %d", 
                 index, removedBlock->lines, removedBlock->words, removedBlock->chars, 
-                index, table->blocks[index].lines, table->blocks[index].words, table->blocks[index].chars);
+                index, table->blocks[index]->lines, table->blocks[index]->words, table->blocks[index]->chars);
             printCheck("Check", message);
 
             i += 2;
@@ -175,7 +181,7 @@ int main(int argc, char **argv){
 
             for(int b=0; b<table->amount; b++){
                 printf("Block#%d | line: %d words: %d chars: %d\n", b, 
-                    table->blocks[b].lines, table->blocks[b].words, table->blocks[b].chars);
+                    table->blocks[b]->lines, table->blocks[b]->words, table->blocks[b]->chars);
             }
             printf("\n");
 
@@ -191,13 +197,10 @@ int main(int argc, char **argv){
 
     times(tms_end);
 
-    double realTime = (double) (tms_end - tms_start) / sysconf(_SC_CLK_TCK);
-    double userTime = (double) (tms_end->tms_cutime - tms_start->tms_cutime) / sysconf(_SC_CLK_TCK);
-    double systemTime = (double) (tms_end->tms_cstime - tms_start->tms_cstime) / sysconf(_SC_CLK_TCK);
+    printTimeResults("Total", tms_start, tms_end);
+    saveTimeResults("Total", tms_start, tms_end);
 
-    printf("r: %f\nu: %f\ns: %f\n", realTime, userTime, systemTime);
-
-    free(table);
+    removeTable(table);
     free(tms_start);
     free(tms_end);
 
