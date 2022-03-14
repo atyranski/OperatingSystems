@@ -1,32 +1,49 @@
 CC = gcc
 CFLAGS = -O -c -w
 REPORT_PATH = report.txt
+LIB_NAME = wcutils
 LIB_PATH = src/wcutils.c
 MAIN_PATH = src/main.c
-CLEAN_EXT = o a so
 
 SMALL_FILE_PATH = texts/small.txt
 MEDIUM_FILE_PATH = texts/medium.txt
 LARGE_FILE_PATH = texts/large.txt
 
-# OP = -O0
-# OP = -Os
-# OP = -O1
+OP_0 = -O0
+OP_s = -Os
+OP_1 = -O1
 
-static:
+# Commands to run
+execute_static: compile_static run
+
+execute_shared: compile_shared run
+
+clean: clean_static clean_shared
+
+
+# Support commands
+compile_static:
 	$(CC) $(CFLAGS) $(LIB_PATH)
 	ar rcs libwcutils.a wcutils.o
 	$(CC) -w $(MAIN_PATH) -o main -L. -lwcutils
 
-shared:
-	$(CC) -fPIC -c $(LIB_PATH)
-	$(CC) -shared -fPIC -o libwcutils.so wcutils.o
-	$(CC) $(MAIN_PATH) -w -lwcutils -L ./ -o main
-
-clean:
-	for file in $(CLEAN_EXT); do rm -f *.$$file; done
+clean_static:
+	rm -f wcutils.o
 	rm -f main
-	rm -f src/temp.txt
+	rm -f out/raport2.txt
+
+compile_shared:
+	$(CC) -fPIC -c -w $(LIB_PATH)
+	$(CC) -shared $(LIB_NAME).o -o lib$(LIB_NAME).so
+	$(CC) -c $(MAIN_PATH)
+	$(CC) main.o -L. -l$(LIB_NAME) -Wl,-rpath=. -o main
+
+clean_shared:
+	rm -f wcutils.o
+	rm -f main.o
+	rm -f main
+	rm -f libwcutils.a
+	rm -f libwcutils.so
 	rm -f out/raport2.txt
 
 run:
