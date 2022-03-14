@@ -20,6 +20,7 @@ compile:
 clean:
 	rm -f wcutils.o
 	rm -f main
+	rm -f libwcutils.a
 	rm -f out/raport2.txt
 
 run:
