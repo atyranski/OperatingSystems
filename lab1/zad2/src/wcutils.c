@@ -1,6 +1,7 @@
 #include "wcutils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 // Table
 WC_Table* createTable(int size){
@@ -26,6 +27,10 @@ int removeTable(WC_Table* table){
 
 // Operations
 int countFile(WC_Table* table, const char* filePath, const char* tempPath){
+    if(access(filePath, F_OK) != 0){
+        return RETURN_CODE_FILE_DONT_EXIST;
+    }
+
     char wcCommand[1000];
     char clearCommand[1000];
     

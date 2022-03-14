@@ -4,6 +4,7 @@
 #define RETURN_CODE_SUCCESS 0;
 #define RETURN_CODE_OUT_OF_RANGE 1;
 #define RETURN_CODE_FILE_NOT_FOUND 2;
+#define RETURN_CODE_FILE_DONT_EXIST -1;
 
 typedef struct WC_Block{
     int lines;

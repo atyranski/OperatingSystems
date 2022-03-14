@@ -4,15 +4,16 @@
 #include <time.h>
 #include "wcutils.h"
 
-// Return codes
+// ---- Return codes
 #define RETURN_CODE_SUCCESS 0;
 #define RETURN_BAD_ARGUMENT 2;
+#define RETURN_CODE_FILE_DONT_EXIST -1;
 
-// External files paths
+// ---- External files paths
 char* tempPath = "src/temp.txt";
 char* raportPath = "out/raport2.txt";
 
-// Console print funtions
+// ---- Console print funtions
 void error(char* type, char* message){
     printf("\033[1;31m");
     printf("[%s] ", type);
@@ -56,19 +57,19 @@ void printTimeResults(char* title, struct tms* tms_start, struct tms* tms_end){
     printf("[Real time]:     %f\n", realTime);
     printf("[User time]:     %f\n", userTime);
     printf("[System time]:     %f\n", systemTime);
-    printf("=========================================\n");
+    printf("=========================================\n\n\n\n");
 }
 
-// Utilities
+// ---- Utilities
 int isNumber(char* s){
     for(int i=0; i<strlen(s); i++){
-        if(!isdigit(s[i])) return 1;
+        if(!isdigit(s[i])) return 0;
     }
 
-    return 0;
+    return 1;
 }
 
-// Save-to-file functions
+// ---- Save-to-file functions
 int saveTestHeader(){
     FILE* raport = fopen(raportPath, "a");
 
@@ -102,15 +103,16 @@ int saveOperationsResults(int filesCounted, int blocksRemoved){
 
     fprintf(raport, "[Files counted]: %d\n", filesCounted);
     fprintf(raport, "[Blocks removed]: %d\n", blocksRemoved);
-    fprintf(raport, "=====================================\n\n");
+    fprintf(raport, "=====================================\n\n\n\n");
     fclose(raport);
 
     return RETURN_CODE_SUCCESS;
 }
 
 
-// Main program
+// ---- Main program
 int main(int argc, char **argv){
+    
     // Necessary variables
     WC_Table* table;
     int filesCounted = 0;
@@ -142,7 +144,7 @@ int main(int argc, char **argv){
         if(strcmp(argv[i], "create_table") == 0){
 
             // Checking if next argument from command line is a parameter for 'create_table'
-            if(isNumber(argv[i+1])){
+            if(!isNumber(argv[i+1])){
                 error("BAD_CODE_ARGUMENT", "incorrect or not provided argument for command 'create_table'");
                 return RETURN_BAD_ARGUMENT;
             } 
@@ -177,7 +179,11 @@ int main(int argc, char **argv){
         if(strcmp(argv[i], "wc_files") == 0){
 
             // Checking if next argument from command line is a parameter for 'wc_files'
-            if(strstr(argv[i+1], ".txt") == NULL){
+            if( strcmp(argv[i+1], "create_table") == 0 || 
+                strcmp(argv[i+1], "wc_files") == 0 ||
+                strcmp(argv[i+1], "remove_block") == 0 ||
+                strcmp(argv[i+1], "print_table") == 0 ||
+                isNumber(argv[i+1]) ){
                 error("BAD_CODE_ARGUMENT", "incorrect or not provided .txt file as argument for command 'wc_files'");
                 return RETURN_BAD_ARGUMENT;
             }
@@ -201,6 +207,11 @@ int main(int argc, char **argv){
 
                 // Executing library function to execute system 'wc', create block and insert to table
                 int placed = countFile(table, filePath, tempPath);
+
+                if(placed == -1){
+                    error("FILE_DONT_EXIST", "provided file dont exist");
+                    return RETURN_CODE_FILE_DONT_EXIST;
+                }
 
                 // Printing [Check] in console to verify command execution
                 WC_Block* block = table->blocks[placed];
@@ -227,7 +238,7 @@ int main(int argc, char **argv){
         if(strcmp(argv[i], "remove_block") == 0){
 
             // Checking if next argument from command line is a parameter for 'wc_files'
-            if(isNumber(argv[i+1])) {
+            if(!isNumber(argv[i+1])) {
                 error("BAD_CODE_ARGUMENT", "incorrect or not provided argument for command 'remove_block'");
                 return RETURN_BAD_ARGUMENT;
             }
@@ -275,32 +286,38 @@ int main(int argc, char **argv){
             printInfo("Operation", "printing table", "");
             printf("Table   | amount: %d capacity: %d\n", table->amount, table->capacity);
 
+            // Printing a line with properties of every block in table
             for(int b=0; b<table->amount; b++){
                 printf("Block#%d | line: %d words: %d chars: %d\n", b, 
                     table->blocks[b]->lines, table->blocks[b]->words, table->blocks[b]->chars);
             }
 
+            // Summary execution time for this operation
             times(tms_end_oper);
             printTime(tms_start_oper, tms_end_oper);
             saveTimeResults("'print_table'", tms_start_oper, tms_end_oper);
 
+            // Setting i-index to get next operation from argv
             i += 1;
 
             printf("\n");
             continue;
         }
 
+        // Returning error, when provided command in argv is unknown
         error("BAD_CODE_ARGUMENT", "name of command is invalid");
         return RETURN_BAD_ARGUMENT;   
     }
 
 
+    // Summary execution time for whole program
     times(tms_end_all);
 
     printTimeResults("Total", tms_start_all, tms_end_all);
     saveTimeResults("Total", tms_start_all, tms_end_all);
     saveOperationsResults(filesCounted, blocksRemoved);
 
+    // Free table and time structs
     removeTable(table);
     free(tms_start_all);
     free(tms_end_all);
