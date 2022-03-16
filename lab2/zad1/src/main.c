@@ -1,16 +1,88 @@
 #include <stdio.h>
+#include <unistd.h>
 #include "printutils.h"
 
 // ---- Return codes
 #define RETURN_SUCCESS 0;
-#define RETURN_INCORRECT_ARGUMENT_AMOUNT -1;
+#define RETURN_UNKNOWN_ERROR -1;
+#define RETURN_INCORRECT_ARGUMENT_AMOUNT -2;
+#define RETURN_COULDNT_OPEN_FILE -3;
+
+FILE* getFileFromPath(char* prompt_message, char* mode, char* path_provided){
+    
+    // Variables
+    FILE* file;
+    char* path[1000];
+    char* feedback[1000];
+
+    // Setting path (as a user input or function argument)
+    if(path_provided == NULL){
+        printPrompt("Input", prompt_message);
+        scanf("%s", path);
+    } else {
+        strcpy(path, path_provided);
+    }
+
+    // Checking if file exists
+    if(access(path, F_OK ) != 0) {
+        error("COULDNT_OPEN_FILE", "file don't exist or don't have permission");
+        return NULL;
+    }
+
+    // Opening file
+    file = fopen(path, mode);
+    if(file == NULL){
+        error("COULDNT_OPEN_FILE", "program cannot open file from provided path. Path is incorrect, file don't exist or don't have permission in order to read file.");
+        return NULL;
+    }
+
+    // Printing information about opening file correctly
+    sprintf(feedback, "file '%s' opened successfuly\n", path);
+    printCheck(feedback);
+
+    return file;
+}
+
+int copyFromSourceToDestination(FILE* file_from, FILE* file_to){
+    char *status;
+    char input[255];
+
+    do {
+        if(strcmp(input, "\n") || strcmp(input, "")) {
+            fprintf(file_to, "%s\n", input);
+        }
+        status = fgets(input, sizeof(input), file_from);
+    } while (status);
+
+    return RETURN_SUCCESS;
+}
 
 // ---- Main program
 int main(int argc, char **argv){
     
-    printf("[Main] Execute version: %s\n\n", "lib");
+    printf("[Main] Execute version: %s\n\n", "high-level");
     if(argc == 1){
-        printf("Provide file paths from console input\n");
+
+        // Variables for files
+        FILE* file_from;
+        FILE* file_to;
+        int result;
+
+        // Open first(source) file
+        file_from = getFileFromPath("Enter destination file path", "r+", NULL);
+        if(file_from == NULL) return RETURN_COULDNT_OPEN_FILE;
+
+        // Open second(destination) file
+        file_to = getFileFromPath("Enter destination file path", "a+", NULL);
+        if(file_to == NULL) return RETURN_COULDNT_OPEN_FILE;
+
+        result = copyFromSourceToDestination(file_from, file_to);
+
+        // Closing and saving changes to particular files
+        fclose(file_from);
+        fclose(file_to);
+
+        return RETURN_SUCCESS;
     }
 
     if(argc == 2){
@@ -19,9 +91,26 @@ int main(int argc, char **argv){
     }
 
     if(argc == 3){
-        for(int i=0; i<argc; i++){
-            printf("%d: %s\n", i, argv[i]);
-        }
+        // Variables for files
+        FILE* file_from;
+        FILE* file_to;
+        int result;
+
+        // Open first(source) file
+        file_from = getFileFromPath("Enter destination file path", "r+", argv[1]);
+        if(file_from == NULL) return RETURN_COULDNT_OPEN_FILE;
+
+        // Open second(destination) file
+        file_to = getFileFromPath("Enter destination file path", "a+", argv[2]);
+        if(file_to == NULL) return RETURN_COULDNT_OPEN_FILE;
+
+        result = copyFromSourceToDestination(file_from, file_to);
+
+        // Closing and saving changes to particular files
+        fclose(file_from);
+        fclose(file_to);
+
+        return RETURN_SUCCESS;
     }
 
     if(argc > 3){
@@ -29,5 +118,6 @@ int main(int argc, char **argv){
         return RETURN_INCORRECT_ARGUMENT_AMOUNT;
     }
 
-    return RETURN_SUCCESS;
+    error("RETURN_UNKNOWN_ERROR", "program occured unknown problem");
+    return RETURN_UNKNOWN_ERROR;
 }

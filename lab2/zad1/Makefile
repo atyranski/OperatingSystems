@@ -13,6 +13,8 @@ DEST_PATH = texts/destination.txt
 DV_PATH = texts/duis_vel.txt
 LI_PATH = texts/lorem_ipsum.txt
 RAJ_PATH = texts/romeo_and_juliet.txt
+F_PATH = texts/from.txt
+T_PATH = texts/to.txt
 
 recompile: clean compile run
 
@@ -24,7 +26,8 @@ compile:
 clean:
 	clear
 	rm -f printutils.o
+	rm -f libprintutils.a
 	rm -f main
 
 run:
-	./main $(DEST_PATH) $(DV_PATH)
+	./main $(F_PATH) $(T_PATH)
