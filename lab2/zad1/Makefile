@@ -1,35 +1,30 @@
-# --- Utility variables
+# --- Variables
 CC = gcc
-CFLAGS = -c -w
+CFLAGS = -O -c -w
 OPTIMIZATION = 
 
-# --- Programs source paths
-MAIN_LIB_NAME = main_lib
-MAIN_LIB_PATH = src/main_lib.c
+# --- Program source paths
+LIB_NAME = printutils
+LIB_PATH = src/printutils.c
+MAIN_PATH = src/main.c
 
-MAIN_SYS_NAME = main_sys
-MAIN_SYS_PATH = src/main_sys.c
-
-PRINT_LIB_NAME = printutils
-PRINT_LIB_PATH = libs/printutils.c
-
-# --- File paths
-LOREM_PATH = texts/lorem_ipsum.txt
-DUIS_PATH = texts/duis_vel.txt
+# --- Text file paths
+DEST_PATH = texts/destination.txt
+DV_PATH = texts/duis_vel.txt
+LI_PATH = texts/lorem_ipsum.txt
 RAJ_PATH = texts/romeo_and_juliet.txt
 
-DEST_PATH = texts/destination.txt
+recompile: clean compile run
 
-# --- Commands to run
-execute_lib: clean compile_lib_main run
-
-compile_lib_main:
-	$(CC) $(CFLAGS) $(MAIN_LIB_PATH) $(OPTIMIZATION) -o main
+compile:
+	$(CC) $(CFLAGS) $(LIB_PATH)
+	ar rcs lib$(LIB_NAME).a $(LIB_NAME).o
+	$(CC) -w $(MAIN_PATH) $(OPTIMIZATION) -o main -L. -l$(LIB_NAME)
 
 clean:
+	clear
+	rm -f printutils.o
 	rm -f main
 
 run:
-	@echo
-	@echo -------------- TEST_01 --------------
-	./main $(LOREM_PATH)  $(DEST_PATH)  $(DEST_PATH)
+	./main $(DEST_PATH) $(DV_PATH)
