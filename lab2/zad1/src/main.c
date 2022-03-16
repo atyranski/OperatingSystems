@@ -48,11 +48,13 @@ int copyFromSourceToDestination(FILE* file_from, FILE* file_to){
     char input[255];
 
     do {
-        if(strcmp(input, "\n") || strcmp(input, "")) {
-            fprintf(file_to, "%s\n", input);
+        if(strcmp(input, "\n") && strcmp(input, "")) {
+            fprintf(file_to, "%s", input);
         }
         status = fgets(input, sizeof(input), file_from);
     } while (status);
+
+    fprintf(file_to, "\n-----------------------\n");
 
     return RETURN_SUCCESS;
 }

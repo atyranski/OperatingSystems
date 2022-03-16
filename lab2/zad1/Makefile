@@ -10,8 +10,8 @@ MAIN_PATH = src/main.c
 
 # --- Text file paths
 DEST_PATH = texts/destination.txt
-DV_PATH = texts/duis_vel.txt
 LI_PATH = texts/lorem_ipsum.txt
+DV_PATH = texts/duis_vel.txt
 RAJ_PATH = texts/romeo_and_juliet.txt
 F_PATH = texts/from.txt
 T_PATH = texts/to.txt
@@ -30,4 +30,6 @@ clean:
 	rm -f main
 
 run:
-	./main $(F_PATH) $(T_PATH)
+	./main $(LI_PATH) $(DEST_PATH)
+	./main $(DV_PATH) $(DEST_PATH)
+	./main $(RAJ_PATH) $(DEST_PATH)
