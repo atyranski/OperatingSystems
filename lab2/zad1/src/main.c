@@ -1,12 +1,16 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include "printutils.h"
 
 // ---- Return codes
-#define RETURN_SUCCESS 0;
-#define RETURN_UNKNOWN_ERROR -1;
-#define RETURN_INCORRECT_ARGUMENT_AMOUNT -2;
-#define RETURN_COULDNT_OPEN_FILE -3;
+#define RETURN_SUCCESS 0
+#define RETURN_UNKNOWN_ERROR -1
+#define RETURN_INCORRECT_ARGUMENT_AMOUNT -2
+#define RETURN_COULDNT_OPEN_FILE -3
+
+#define _BUFFER_SIZE 256
+static char BUFFER[_BUFFER_SIZE];
 
 FILE* getFileFromPath(char* prompt_message, char* mode, char* path_provided){
     
@@ -43,18 +47,33 @@ FILE* getFileFromPath(char* prompt_message, char* mode, char* path_provided){
     return file;
 }
 
+int getLineLength(char* buffer, int size){
+    int length = 0;
+
+    while(length < size && buffer[length] != '\n') length ++;
+
+    return length;
+}
+
 int copyFromSourceToDestination(FILE* file_from, FILE* file_to){
-    char *status;
-    char input[255];
+   
+    char* buffer = BUFFER;
+    int bytes_left = fread(buffer, sizeof(char), 1, file_from);
+    bool wasWhitespace = false;
 
-    do {
-        if(strcmp(input, "\n") && strcmp(input, "")) {
-            fprintf(file_to, "%s", input);
+    while(bytes_left){
+        if(wasWhitespace || strcmp(buffer, "\n")) {
+            printf("%s",buffer);
+            fwrite (buffer, sizeof(char), 1, file_to);
         }
-        status = fgets(input, sizeof(input), file_from);
-    } while (status);
 
-    fprintf(file_to, "\n-----------------------\n");
+        if(strcmp(buffer, "\n")) wasWhitespace = true;
+        else wasWhitespace = false;
+
+        bytes_left = fread(buffer, sizeof(char), 1, file_from);
+    }
+
+    fwrite("-----------------------\n", sizeof(char), 24, file_to);
 
     return RETURN_SUCCESS;
 }
