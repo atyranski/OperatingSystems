@@ -31,5 +31,3 @@ clean:
 
 run:
 	./main $(LI_PATH) $(DEST_PATH)
-	./main $(DV_PATH) $(DEST_PATH)
-	./main $(RAJ_PATH) $(DEST_PATH)

@@ -47,14 +47,6 @@ FILE* getFileFromPath(char* prompt_message, char* mode, char* path_provided){
     return file;
 }
 
-int getLineLength(char* buffer, int size){
-    int length = 0;
-
-    while(length < size && buffer[length] != '\n') length ++;
-
-    return length;
-}
-
 int copyFromSourceToDestination(FILE* file_from, FILE* file_to){
    
     char* buffer = BUFFER;
@@ -62,12 +54,20 @@ int copyFromSourceToDestination(FILE* file_from, FILE* file_to){
     bool wasWhitespace = false;
 
     while(bytes_left){
-        if(wasWhitespace || strcmp(buffer, "\n")) {
+        if( (wasWhitespace || strcmp(buffer, "\n")) &&
+            (wasWhitespace || strcmp(buffer, " ")) &&
+            (wasWhitespace || strcmp(buffer, "\t")) &&
+            (wasWhitespace || strcmp(buffer, "\v")) &&
+            (wasWhitespace || strcmp(buffer, "\f"))) {
             printf("%s",buffer);
             fwrite (buffer, sizeof(char), 1, file_to);
         }
 
-        if(strcmp(buffer, "\n")) wasWhitespace = true;
+        if( strcmp(buffer, "\n") &&
+            strcmp(buffer, " ") &&
+            strcmp(buffer, "\t") &&
+            strcmp(buffer, "\v") &&
+            strcmp(buffer, "\f")) wasWhitespace = true;
         else wasWhitespace = false;
 
         bytes_left = fread(buffer, sizeof(char), 1, file_from);
