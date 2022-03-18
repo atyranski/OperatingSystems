@@ -31,11 +31,28 @@ compile_low:
 	ar rcs lib$(LIB_NAME).a $(LIB_NAME).o
 	$(CC) -w $(MAIN_LOW_PATH) $(OPTIMIZATION) -o main -L. -l$(LIB_NAME)
 
+# --- May be useful if program don't have permission to acces the raport files
+give_permissions:
+	chmod 777 out/raport2_high.txt
+
 clean:
 	clear
 	rm -f printutils.o
 	rm -f libprintutils.a
 	rm -f main
 
+clean_raports:
+	rm -f out/*.txt
+
 run:
+	./main L $(LI_PATH)
 	./main i $(LI_PATH)
+	./main a $(LI_PATH)
+
+	./main b $(DV_PATH)
+	./main g $(DV_PATH)
+	./main k $(DV_PATH)
+
+	./main o $(RAJ_PATH)
+	./main y $(RAJ_PATH)
+	./main r $(RAJ_PATH)
