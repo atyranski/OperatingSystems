@@ -95,7 +95,7 @@ int main(int argc, char **argv){
         int result;
 
         // Open first(source) file
-        file_from = getFileFromPath("Enter destination file path", "r+", NULL);
+        file_from = getFileFromPath("Enter source file path", "r+", NULL);
         if(file_from == NULL) return RETURN_COULDNT_OPEN_FILE;
 
         // Open second(destination) file
@@ -123,7 +123,7 @@ int main(int argc, char **argv){
         int result;
 
         // Open first(source) file
-        file_from = getFileFromPath("Enter destination file path", "r+", argv[1]);
+        file_from = getFileFromPath("Enter source file path", "r+", argv[1]);
         if(file_from == NULL) return RETURN_COULDNT_OPEN_FILE;
 
         // Open second(destination) file
