@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "printutils.h"
 
 // ---- Return codes
@@ -15,12 +12,12 @@
 #define _BUFFER_SIZE 256
 static char BUFFER[_BUFFER_SIZE];
 
-char* RAPORT_PATH = "out/raport2_low.txt";
+char* RAPORT_PATH = "out/raport2_high.txt";
 
-int getFileFromPath(char* path, char* mode){
+FILE* getFileFromPath(char* path, char* mode){
     
     // Variables
-    int file;
+    FILE* file;
     char* feedback[1000];
 
     // Checking if file exists (only with "r+" mode)
@@ -31,10 +28,9 @@ int getFileFromPath(char* path, char* mode){
         }
     }
 
-    // Opening file
-    if(strcmp(mode, "r+") == 0) file = open(path, O_RDONLY);
-    else file = open(path, O_CREAT | O_WRONLY | O_APPEND);
 
+    // Opening file
+    file = fopen(path, mode);
     if(file == NULL){
         error("COULDNT_OPEN_FILE", "program cannot open file from provided path. Path is incorrect, file don't exist or don't have permission in order to read file.");
         return NULL;
@@ -47,20 +43,20 @@ int getFileFromPath(char* path, char* mode){
     return file;
 }
 
-int appearancesInFile(char* character, int file){
+int appearancesInFile(char* character, FILE* file){
    
     char* buffer = BUFFER;
-    int bytes_left = read(file, buffer, sizeof(char));
+    int bytes_left = fread(buffer, sizeof(char), 1, file);
     int appearances = 0;
 
     while(bytes_left){
         if(strcmp(buffer, character) == 0) {
             appearances++;
             printf("\033[1;31m%s\033[0m", buffer);
-
+            // fwrite (buffer, sizeof(char), 1, file);
         } else printf("%s", buffer);
 
-        bytes_left = read(file, buffer, sizeof(char));
+        bytes_left = fread(buffer, sizeof(char), 1, file);
     }
 
     printf("\n");
@@ -75,8 +71,8 @@ int main(int argc, char **argv){
 
     if(argc == 3){
         // Variables for files
-        int file;
-        int output;
+        FILE* file;
+        FILE* output;
         char* character = argv[1];
         int result;
         char* message[1000];
@@ -94,11 +90,11 @@ int main(int argc, char **argv){
         sprintf(message, "character '%s' found %d time(s) in file '%s'\n", character, result, argv[2]);
         printInfo("Result", message);
 
-        write(output, message, strlen(message));
+        fwrite(message, sizeof(char), strlen(message), output);
 
         // Closing and saving changes to particular files
-        close(file);
-        close(output);
+        fclose(file);
+        fclose(output);
 
         return RETURN_SUCCESS;
     }
