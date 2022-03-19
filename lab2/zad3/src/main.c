@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <dirent.h>
 #include <limits.h>
+#include <stdlib.h>
 #include "printutils.h"
 
 // ---- Return codes
@@ -68,6 +69,32 @@ void printDirectory(char* dir_path){
 
     printf("Subdirs found: %d\n\n", dirAmount);
     
+    char** nextDirs = calloc(dirAmount, sizeof(char*));
+    int index = 0;
+
+    rewinddir(dir);
+
+    while ((entry = readdir(dir)) != NULL) {
+        if( strcmp(getEntryType(entry->d_type), "dir") == 0 &&
+            strcmp(entry->d_name, ".") != 0 &&
+            strcmp(entry->d_name, "..") != 0) {
+                nextDirs[index] = entry->d_name;
+                index++;
+            }
+    }
+
+    for(int i=0; i<dirAmount; i++) {
+        char* nextPath[PATH_MAX];
+
+        sprintf(nextPath, "%s/%s", dir_path, nextDirs[i]);
+
+        // printf("%s\n", nextPath);
+
+        printDirectory(nextPath);
+    }
+    
+    free(nextDirs);
+
     if(closedir(dir) != 0){
         printf("%d\n", errno);
     }
