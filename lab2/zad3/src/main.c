@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <dirent.h>
+#include <limits.h>
 #include "printutils.h"
 
 // ---- Return codes
@@ -28,31 +29,58 @@ char* getEntryType(unsigned char type_code){
     }
 }
 
+struct dirent* getNextEntry(){
+
+}
+
+void printEntry(struct dirent* entry){
+    char buffer[PATH_MAX];
+    
+    realpath(entry->d_name, buffer);
+
+    printf("[%s]\t\tname: %s\n", getEntryType(entry->d_type), entry->d_name);
+    printf("\033[0;34m%s\033[0m\n", buffer);
+}
+
+void printDirectory(char* dir_path){
+    // opendir() returns a pointer of DIR type. 
+    DIR* dir = opendir(dir_path);
+
+    // opendir returns NULL if couldn't open directory
+    if (dir == NULL) {
+        error("COUDNT_OPEN_DIRECTORY","Could not open current directory");
+        return RETURN_COUDNT_OPEN_DIRECTORY;
+    }
+
+    printInfo("Processing", dir_path);
+
+    // Pointer for directory entry
+    struct dirent *entry; 
+    int dirAmount = 0;
+
+    // for readdir()
+    while ((entry = readdir(dir)) != NULL) {
+        printEntry(entry);
+        if( strcmp(getEntryType(entry->d_type), "dir") == 0 &&
+            strcmp(entry->d_name, ".") != 0 &&
+            strcmp(entry->d_name, "..") != 0) dirAmount++;
+    }
+
+    printf("Subdirs found: %d\n\n", dirAmount);
+    
+    if(closedir(dir) != 0){
+        printf("%d\n", errno);
+    }
+}
+
 // ---- Main program
 int main(int argc, char **argv){
     
     printf("[Main] Execute version: %s\n\n", "opendir(), readdir() and stat functions");
 
     if(argc == 2){
+        printDirectory(argv[1]);
 
-        // Pointer for directory entry
-        struct dirent *entry; 
-  
-        // opendir() returns a pointer of DIR type. 
-        DIR* catalog = opendir(argv[1]);
-
-        // opendir returns NULL if couldn't open directory
-        if (catalog == NULL) {
-            error("COUDNT_OPEN_DIRECTORY","Could not open current directory");
-            return RETURN_COUDNT_OPEN_DIRECTORY;
-        }
-    
-        // for readdir()
-        while ((entry = readdir(catalog)) != NULL) printf(">> %s\ttype: %s\n", entry->d_name, getEntryType(entry->d_type));
-    
-       if(closedir(catalog) != 0){
-            printf("%d\n", errno);
-        }
 
         return RETURN_SUCCESS;
     }
