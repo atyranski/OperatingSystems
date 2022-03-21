@@ -37,6 +37,9 @@ clean:
 	rm -f libprintutils.a
 	rm -f main
 
+clean_raports:
+	rm -f out/*.txt
+
 run:
 	./main $(LI_PATH) $(DEST_PATH)
 	./main $(DV_PATH) $(DEST_PATH)

@@ -15,7 +15,7 @@
 #define _BUFFER_SIZE 256
 static char BUFFER[_BUFFER_SIZE];
 
-char* RAPORT_PATH = "out/raport2_low.txt";
+char* RAPORT_PATH = "out/pomiar_zad_2.txt";
 
 int getFileFromPath(char* path, char* mode){
     
@@ -53,6 +53,7 @@ int appearancesInFile(char* character, int file){
     int bytes_left = read(file, buffer, sizeof(char));
     int appearances = 0;
 
+    // Reading char by char from provided file and checking and counting appearances of the char
     while(bytes_left){
         if(strcmp(buffer, character) == 0) {
             appearances++;
@@ -81,6 +82,15 @@ int main(int argc, char **argv){
         int result;
         char* message[1000];
 
+        // Time structures
+        struct tms *tms_start= malloc(sizeof(struct tms));
+        struct tms *tms_end = malloc(sizeof(struct tms));
+
+        times(tms_start);
+
+        //Just to print header in the raport file
+        saveTestHeader(RAPORT_PATH, true);
+
         // Open file
         file = getFileFromPath(argv[2], "r+");
         if(file == NULL) return RETURN_COULDNT_OPEN_FILE;
@@ -95,6 +105,16 @@ int main(int argc, char **argv){
         printInfo("Result", message);
 
         write(output, message, strlen(message));
+
+        // Summary execution time for whole program
+        times(tms_end);
+
+        printTimeResults("Total", tms_start, tms_end);
+        saveTimeResults(tms_start, tms_end, RAPORT_PATH);
+
+        // Free time structs
+        free(tms_start);
+        free(tms_end);
 
         // Closing and saving changes to particular files
         close(file);

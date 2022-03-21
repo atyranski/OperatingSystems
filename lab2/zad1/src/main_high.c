@@ -12,6 +12,8 @@
 #define _BUFFER_SIZE 256
 static char BUFFER[_BUFFER_SIZE];
 
+char* RAPORT_PATH = "out/pomiar_zad_1.txt";
+
 FILE* getFileFromPath(char* prompt_message, char* mode, char* path_provided){
     
     // Variables
@@ -89,6 +91,15 @@ int main(int argc, char **argv){
         FILE* file_to;
         int result;
 
+        // Time structures
+        struct tms *tms_start= malloc(sizeof(struct tms));
+        struct tms *tms_end = malloc(sizeof(struct tms));
+
+        times(tms_start);
+
+        //Just to print header in the raport file
+        saveTestHeader(RAPORT_PATH, false);
+
         // Open first(source) file
         file_from = getFileFromPath("Enter source file path", "r+", NULL);
         if(file_from == NULL) return RETURN_COULDNT_OPEN_FILE;
@@ -98,6 +109,16 @@ int main(int argc, char **argv){
         if(file_to == NULL) return RETURN_COULDNT_OPEN_FILE;
 
         result = copyFromSourceToDestination(file_from, file_to);
+
+        // Summary execution time for whole program
+        times(tms_end);
+
+        printTimeResults("Total", tms_start, tms_end);
+        saveTimeResults(tms_start, tms_end, RAPORT_PATH);
+
+        // Free time structs
+        free(tms_start);
+        free(tms_end);
 
         // Closing and saving changes to particular files
         fclose(file_from);
@@ -117,6 +138,15 @@ int main(int argc, char **argv){
         FILE* file_to;
         int result;
 
+        // Time structures
+        struct tms *tms_start= malloc(sizeof(struct tms));
+        struct tms *tms_end = malloc(sizeof(struct tms));
+
+        times(tms_start);
+
+        //Just to print header in the raport file
+        saveTestHeader(RAPORT_PATH, false);
+
         // Open first(source) file
         file_from = getFileFromPath("none", "r+", argv[1]);
         if(file_from == NULL) return RETURN_COULDNT_OPEN_FILE;
@@ -126,6 +156,16 @@ int main(int argc, char **argv){
         if(file_to == NULL) return RETURN_COULDNT_OPEN_FILE;
 
         result = copyFromSourceToDestination(file_from, file_to);
+
+        // Summary execution time for whole program
+        times(tms_end);
+
+        printTimeResults("Total", tms_start, tms_end);
+        saveTimeResults(tms_start, tms_end, RAPORT_PATH);
+
+        // Free time structs
+        free(tms_start);
+        free(tms_end);
 
         // Closing and saving changes to particular files
         fclose(file_from);

@@ -12,7 +12,7 @@
 #define _BUFFER_SIZE 256
 static char BUFFER[_BUFFER_SIZE];
 
-char* RAPORT_PATH = "out/raport2_high.txt";
+char* RAPORT_PATH = "out/pomiar_zad_2.txt";
 
 FILE* getFileFromPath(char* path, char* mode){
     
@@ -27,7 +27,6 @@ FILE* getFileFromPath(char* path, char* mode){
             return NULL;
         }
     }
-
 
     // Opening file
     file = fopen(path, mode);
@@ -49,11 +48,12 @@ int appearancesInFile(char* character, FILE* file){
     int bytes_left = fread(buffer, sizeof(char), 1, file);
     int appearances = 0;
 
+    // Reading char by char from provided file and checking and counting appearances of the char
     while(bytes_left){
         if(strcmp(buffer, character) == 0) {
             appearances++;
             printf("\033[1;31m%s\033[0m", buffer);
-            // fwrite (buffer, sizeof(char), 1, file);
+
         } else printf("%s", buffer);
 
         bytes_left = fread(buffer, sizeof(char), 1, file);
@@ -77,6 +77,15 @@ int main(int argc, char **argv){
         int result;
         char* message[1000];
 
+        // Time structures
+        struct tms *tms_start= malloc(sizeof(struct tms));
+        struct tms *tms_end = malloc(sizeof(struct tms));
+
+        times(tms_start);
+
+        //Just to print header in the raport file
+        saveTestHeader(RAPORT_PATH, false);
+
         // Open file
         file = getFileFromPath(argv[2], "r+");
         if(file == NULL) return RETURN_COULDNT_OPEN_FILE;
@@ -91,6 +100,16 @@ int main(int argc, char **argv){
         printInfo("Result", message);
 
         fwrite(message, sizeof(char), strlen(message), output);
+
+        // Summary execution time for whole program
+        times(tms_end);
+
+        printTimeResults("Total", tms_start, tms_end);
+        saveTimeResults(tms_start, tms_end, RAPORT_PATH);
+
+        // Free time structs
+        free(tms_start);
+        free(tms_end);
 
         // Closing and saving changes to particular files
         fclose(file);
