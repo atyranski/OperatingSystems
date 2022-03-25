@@ -2,16 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
-#include <sys/times.h>
-#include <time.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
+#include <sys/wait.h>
+#include "printutils.h"
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
 #define RETURN_INCORRECT_ARGUMENT_AMOUNT -2
+#define RETURN_COULDNT_OPEN_FILE -3
 #define PI 3.141592654
 
 double radiantToDegree(double randian){
@@ -53,12 +50,32 @@ int main(int argc, char **argv){
 
     for(int i=0; i<intervalAmount; i++){
         pid_t pid = fork();
+        int status;
 
         if(pid == 0){
             double x1 = interval * (double) i;
             double x2 = interval * (double) i + interval;
+            double result = integralValue(x1, x2);
 
-            printf("\n%f", integralValue(x1, x2));
+            printf("\n%f", result);
+
+            char fileName[1000];
+            sprintf(fileName, "out/w%d.txt", i + 1);
+
+            printf("\n%s", fileName);
+
+            FILE* file = fopen(fileName,'w+');
+
+            if(file == NULL){
+                error("COULDNT_OPEN_FILE", "program cannot open file from provided path. Path is incorrect, file don't exist or don't have permission in order to read file.");
+                return RETURN_COULDNT_OPEN_FILE;
+            }
+            printf("\nco");
+
+            fprintf(file, "%f\n", result);
+
+            fclose(file);
+
             return 0;
         } else {
             wait(NULL);
