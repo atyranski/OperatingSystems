@@ -1,11 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "printutils.h"
+#include <math.h>
+#include <sys/times.h>
+#include <time.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
 #define RETURN_INCORRECT_ARGUMENT_AMOUNT -2
+#define PI 3.141592654
+
+double radiantToDegree(double randian){
+    return (randian * 180) / PI;
+}
+
+double getFunctionValue(double x){
+    return 4 * atan(x);
+}
+
+double integralValue(double x1, double x2){
+    return getFunctionValue(x2) - getFunctionValue(x1);
+}
 
 // ---- Main program
 int main(int argc, char **argv){
@@ -24,19 +43,25 @@ int main(int argc, char **argv){
 
 
 
-    if(argc != 2){
-        error("INCORRECT_ARGUMENT_AMOUNT", "provide one number, which is an amount of child processes you want to create");
+    if(argc < 3 || argc > 3){
+        error("INCORRECT_ARGUMENT_AMOUNT", "provide: [interval] [number of intervals]");
         return RETURN_INCORRECT_ARGUMENT_AMOUNT;
     }
 
-    int childrenAmount = atoi(argv[1]);
+    int intervalAmount = atoi(argv[2]);
+    double interval = 1.0/intervalAmount;
 
-    for(int i=0; i<childrenAmount; i++){
+    for(int i=0; i<intervalAmount; i++){
         pid_t pid = fork();
 
         if(pid == 0){
-            printf("\n[Child] this is print from process: #%d", getpid());
+            double x1 = interval * (double) i;
+            double x2 = interval * (double) i + interval;
+
+            printf("\n%f", integralValue(x1, x2));
             return 0;
+        } else {
+            wait(NULL);
         }
     }
 
@@ -49,9 +74,9 @@ int main(int argc, char **argv){
     double time3 = (double) ((*end_tms).tms_cstime - (*start_tms).tms_cstime / sysconf(_SC_CLK_TCK));
     // TIME FUNC
 
-    printf("Real time: %f ns\n", real_time_in_ns / 1000000000);
-    printf("System time: %f ns\n", time2);
-    printf("User time: %f ns\n", time3);
+    printf("\nReal time: %f ns", real_time_in_ns / 1000000000);
+    printf("\nSystem time: %f ns", time2);
+    printf("\nUser time: %f ns\n", time3);
 
     return 0;
 }
