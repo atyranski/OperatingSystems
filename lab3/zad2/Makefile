@@ -17,10 +17,13 @@ compile:
 
 clean:
 	clear
-	rm -f out/*.txt
+	make clear_out
 	rm -f printutils.o
 	rm -f libprintutils.a
 	rm -f main
+
+clear_out:
+	rm -f out/*.txt
 
 run:
 	./main 5 10

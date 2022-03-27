@@ -23,6 +23,26 @@ double integralValue(double x1, double x2){
     return getFunctionValue(x2) - getFunctionValue(x1);
 }
 
+double sumPartials(int intervalAmount){
+    double result = 0;
+
+    for(int i=0; i<intervalAmount; i++){
+        char fileName[30];
+        char buffer[30];
+        double value;
+        sprintf(fileName, "out/w%d.txt", i + 1);
+
+        FILE* file = fopen(fileName,"r");
+        fgets(buffer, 30, file);
+        fclose(file);
+
+        sscanf(buffer, "%lf", &value);
+        result += value;
+    }
+
+    return result;
+};
+
 // ---- Main program
 int main(int argc, char **argv){
 
@@ -73,6 +93,12 @@ int main(int argc, char **argv){
     }
 
     while (wait(NULL) > 0);
+    double summary = sumPartials(intervalAmount);
+    
+    char message[1000];
+    sprintf(message, "integral on range [0,1] of 4/(x^2 + 1) equals: %f", summary);
+    
+    printInfo("Summary", message);
 
     // TIME FUNC
     times(end_tms);
