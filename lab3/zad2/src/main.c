@@ -38,8 +38,6 @@ int main(int argc, char **argv){
     }
     // TIME FUNC
 
-
-
     if(argc < 3 || argc > 3){
         error("INCORRECT_ARGUMENT_AMOUNT", "provide: [interval] [number of intervals]");
         return RETURN_INCORRECT_ARGUMENT_AMOUNT;
@@ -57,31 +55,24 @@ int main(int argc, char **argv){
             double x2 = interval * (double) i + interval;
             double result = integralValue(x1, x2);
 
-            printf("\n%f", result);
-
-            char fileName[1000];
+            char fileName[30];
             sprintf(fileName, "out/w%d.txt", i + 1);
 
-            printf("\n%s", fileName);
-
-            FILE* file = fopen(fileName,'w+');
+            FILE* file = fopen(fileName,"wb");
 
             if(file == NULL){
                 error("COULDNT_OPEN_FILE", "program cannot open file from provided path. Path is incorrect, file don't exist or don't have permission in order to read file.");
                 return RETURN_COULDNT_OPEN_FILE;
             }
-            printf("\nco");
 
             fprintf(file, "%f\n", result);
-
             fclose(file);
 
             return 0;
-        } else {
-            wait(NULL);
         }
     }
 
+    while (wait(NULL) > 0);
 
     // TIME FUNC
     times(end_tms);

@@ -17,6 +17,7 @@ compile:
 
 clean:
 	clear
+	rm -f out/*.txt
 	rm -f printutils.o
 	rm -f libprintutils.a
 	rm -f main
