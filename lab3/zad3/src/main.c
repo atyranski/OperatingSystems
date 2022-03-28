@@ -16,85 +16,61 @@
 #define RETURN_COUDNT_OPEN_DIRECTORY -3
 #define RETURN_INVALID_ENTRY_TYPECODE -4
 
-int count_fifo = 0;
-int count_char_dev = 0;
-int count_dir = 0;
-int count_block_dev = 0;
-int count_file = 0;
-int count_slink = 0;
-int count_sock = 0;
+#define _BUFFER_SIZE 256
+static char BUFFER[_BUFFER_SIZE];
 
 // ZWERYFIKOWAC CZY WSZYSTKO JEST
 char* getEntryType(unsigned char type_code){
     switch (type_code){
-        case 1: return "fifo";
-        case 2: return "char dev";
         case 4: return "dir";
-        case 6: return "block dev";
         case 8: return "file";
-        case 10: return "slink";
-        case 12: return "sock";
         default:
-            error("INVALID_ENTRY_TYPECODE", "program occured invalid type code for entry in directory");
-            return NULL;
+            return "other";
         }
 }
 
-void countType(unsigned char type){
-    switch (type){
-        case 1: count_fifo++; break;
-        case 2: count_char_dev++; break;
-        case 4: count_dir++; break;
-        case 6: count_block_dev++; break;
-        case 8: count_file++; break;
-        case 10: count_slink++; break;
-        case 12: count_sock++; break;
-        default:
-            error("INVALID_ENTRY_TYPECODE", "program occured invalid type code for entry in directory");
-            return NULL;
-    }
-}
-
-void printTypeSummary(){
-    printf("Type summary:\n");
-    printf("fifo:\t\t%d\n", count_fifo);
-    printf("char dev:\t%d\n", count_char_dev);
-    printf("dir:\t\t%d\n", count_dir);
-    printf("block dev:\t%d\n", count_block_dev);
-    printf("file:\t\t%d\n", count_file);
-    printf("slink:\t\t%d\n", count_slink);
-    printf("sock:\t\t%d\n", count_sock);
-    printf("----------------------\n");
-}
-
-void printEntry(struct dirent* entry){
-    char absolutePath[PATH_MAX];
-    struct tm* modificationTime;
-    struct tm* accessTime;
-    struct stat statistics;
-
-    char* modification[40];
-    char* access[40];
-
-    realpath(entry->d_name, absolutePath);
-    stat(absolutePath, &statistics);
-
-    if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, ".." ) != 0){
-        modificationTime = localtime((const time_t *) &statistics.st_mtime);
-        accessTime = localtime((const time_t *) &statistics.st_atime);
-
-        strftime(modification, 40, "modified:\t%d.%m.%Y", modificationTime);
-        strftime(access, 40, "accessed:\t%d.%m.%Y", accessTime);
-
-        printf("name:\t%s\ntype:\t%s\nsize:\t%ld\nhardlinks:\t%ld\n", entry->d_name, getEntryType(entry->d_type), statistics.st_size, statistics.st_nlink);
-        printf("%s\n%s\n", modification, access);
-        printf("\033[0;34m%s\033[0m\n", absolutePath);
-    }
+bool findInFile(char* word, FILE* file){
+    char* buffer = BUFFER;
+    bool result = false;
+    int bytes_left = fread(buffer, sizeof(char), 3, file);
     
-    countType(entry->d_type);
+    while(bytes_left){
+        if(strcmp(buffer, word) == 0) {
+            result = true;
+            printf("\033[1;31m%s\033[0m", buffer);
+
+        } else printf("%s", buffer);
+
+        bytes_left = fread(buffer, sizeof(char), 3, file);
+    }
+
+    return result;
 }
 
-void printDirectory(char* dir_path){
+FILE* getFileFromPath(char* path, char* mode){
+    
+    // Variables
+    FILE* file;
+
+    // Checking if file exists
+    if(strcmp(mode, "r+") == 0){
+        if(access(path, F_OK ) != 0) {
+            error("COULDNT_OPEN_FILE", "file don't exist or don't have permission");
+            return NULL;
+        }
+    }
+
+    // Opening file
+    file = fopen(path, mode);
+    if(file == NULL){
+        error("COULDNT_OPEN_FILE", "program cannot open file from provided path. Path is incorrect, file don't exist or don't have permission in order to read file.");
+        return NULL;
+    }
+
+    return file;
+}
+
+void printDirectory(char* dir_path, char* word){
     // opendir() returns a pointer of DIR type. 
     DIR* dir = opendir(dir_path);
 
@@ -104,7 +80,10 @@ void printDirectory(char* dir_path){
         return RETURN_COUDNT_OPEN_DIRECTORY;
     }
 
-    printInfo("Processing", dir_path);
+    char absolutePath[PATH_MAX];
+    realpath(dir_path, absolutePath);
+
+    printInfo("Processing", absolutePath);
 
     // Pointer for directory entry
     struct dirent *entry; 
@@ -112,7 +91,6 @@ void printDirectory(char* dir_path){
 
     // for readdir()
     while ((entry = readdir(dir)) != NULL) {
-        printEntry(entry);
         if( strcmp(getEntryType(entry->d_type), "dir") == 0 &&
             strcmp(entry->d_name, ".") != 0 &&
             strcmp(entry->d_name, "..") != 0) {
@@ -120,7 +98,7 @@ void printDirectory(char* dir_path){
             }
     }
 
-    printf("Subdirs found: %d\n\n", dirAmount);
+    // printf("Subdirs found: %d\n\n", dirAmount);
     
     char** nextDirs = calloc(dirAmount, sizeof(char*));
     int index = 0;
@@ -134,16 +112,27 @@ void printDirectory(char* dir_path){
                 nextDirs[index] = entry->d_name;
                 index++;
             }
+        if(strcmp(getEntryType(entry->d_type), "file") == 0){
+            char* filePath[PATH_MAX];
+            sprintf(filePath, "%s/%s", dir_path, entry->d_name);
+
+            FILE* file = getFileFromPath(filePath, "r+");
+            
+            if (findInFile(word, file)) {
+               printf("> %s\n", entry->d_name); 
+            }
+
+            fclose(file);
+        }
     }
+
+    printf("\n");
 
     for(int i=0; i<dirAmount; i++) {
         char* nextPath[PATH_MAX];
 
         sprintf(nextPath, "%s/%s", dir_path, nextDirs[i]);
-
-        // printf("%s\n", nextPath);
-
-        printDirectory(nextPath);
+        printDirectory(nextPath, word);
     }
     
     free(nextDirs);
@@ -158,16 +147,19 @@ int main(int argc, char **argv){
     
     printf("[Main] Execute version: %s\n\n", "opendir(), readdir() and stat functions");
 
-    if(argc == 2){
-        printDirectory(argv[1]);
-        printTypeSummary();
-
-        return RETURN_SUCCESS;
-    }
-
-    if(argc != 2){
+    if(argc != 4){
         error("INCORRECT_ARGUMENT_AMOUNT", "provide 1 argument: [catalog path]");
         return RETURN_INCORRECT_ARGUMENT_AMOUNT;
+    }
+
+    char* dirPath = argv[1];
+    char* word = argv[2];
+    int depth = atoi(argv[3]);
+
+    if(argc == 4){
+        printDirectory(dirPath, word);
+
+        return RETURN_SUCCESS;
     }
 
     error("RETURN_UNKNOWN_ERROR", "program occured unknown problem");
