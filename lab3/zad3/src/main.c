@@ -19,34 +19,6 @@
 #define _BUFFER_SIZE 256
 static char BUFFER[_BUFFER_SIZE];
 
-// ZWERYFIKOWAC CZY WSZYSTKO JEST
-char* getEntryType(unsigned char type_code){
-    switch (type_code){
-        case 4: return "dir";
-        case 8: return "file";
-        default:
-            return "other";
-        }
-}
-
-bool findInFile(char* word, FILE* file){
-    char* buffer = BUFFER;
-    bool result = false;
-    int bytes_left = fread(buffer, sizeof(char), 3, file);
-    
-    while(bytes_left){
-        if(strcmp(buffer, word) == 0) {
-            result = true;
-            printf("\033[1;31m%s\033[0m", buffer);
-
-        } else printf("%s", buffer);
-
-        bytes_left = fread(buffer, sizeof(char), 3, file);
-    }
-
-    return result;
-}
-
 FILE* getFileFromPath(char* path, char* mode){
     
     // Variables
@@ -68,6 +40,65 @@ FILE* getFileFromPath(char* path, char* mode){
     }
 
     return file;
+}
+
+// ZWERYFIKOWAC CZY WSZYSTKO JEST
+char* getEntryType(unsigned char type_code){
+    switch (type_code){
+        case 4: return "dir";
+        case 8: return "file";
+        default:
+            return "other";
+        }
+}
+
+bool temporary(char* word, char* file_path){
+    FILE* file_traverse = getFileFromPath(file_path, "r+");
+    FILE* file_search = getFileFromPath(file_path, "r+");
+    bool result = false;
+    int stringLenght = strlen(word);
+
+    char* no_use_buff = BUFFER;
+    char* buffer = BUFFER;
+
+    int bytes_left = fread(no_use_buff, sizeof(char), 1, file_traverse);
+    int no_use_int = fread(buffer, sizeof(char), stringLenght, file_search);
+
+    while (bytes_left){
+        if(strcmp(buffer, word) == 0) {
+            result = true;
+        }
+
+        bytes_left = fread(no_use_buff, sizeof(char), 1, file_traverse);
+
+        fpos_t position;
+        fgetpos(file_traverse, &position);
+        fsetpos(file_search, &position);
+        no_use_int = fread(buffer, sizeof(char), stringLenght, file_search);
+    }
+
+    fclose(file_traverse);
+    fclose(file_search);
+
+    return result;
+}
+
+bool findInFile(char* word, FILE* file){
+    char* buffer = BUFFER;
+    bool result = false;
+    int bytes_left = fread(buffer, sizeof(char), 1, file);
+    
+    while(bytes_left){
+        if(strcmp(buffer, word) == 0) {
+            result = true;
+            printf("\033[1;31m%s\033[0m", buffer);
+
+        } else printf("%s", buffer);
+
+        bytes_left = fread(buffer, sizeof(char), 1, file);
+    }
+
+    return result;
 }
 
 void printDirectory(char* dir_path, char* word){
@@ -116,13 +147,9 @@ void printDirectory(char* dir_path, char* word){
             char* filePath[PATH_MAX];
             sprintf(filePath, "%s/%s", dir_path, entry->d_name);
 
-            FILE* file = getFileFromPath(filePath, "r+");
-            
-            if (findInFile(word, file)) {
+            if (temporary(word, filePath)) {
                printf("> %s\n", entry->d_name); 
             }
-
-            fclose(file);
         }
     }
 
