@@ -27,4 +27,4 @@ clear_out:
 	rm -f out/*.txt
 
 run:
-	./main $(TESTDIR_PATH) placek 2
+	./main $(TESTDIR_PATH) placek 3

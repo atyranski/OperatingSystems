@@ -68,7 +68,7 @@ int main(int argc, char **argv){
 
     for(int i=0; i<intervalAmount; i++){
         pid_t pid = fork();
-        int status;
+        // int status;
 
         if(pid == 0){
             double x1 = interval * (double) i;
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
             fprintf(file, "%f\n", result);
             fclose(file);
 
-            return 0;
+            return RETURN_SUCCESS;
         }
     }
 
@@ -112,5 +112,5 @@ int main(int argc, char **argv){
     printf("\nSystem time: %f ns", time2);
     printf("\nUser time: %f ns\n", time3);
 
-    return 0;
+    return RETURN_SUCCESS;
 }

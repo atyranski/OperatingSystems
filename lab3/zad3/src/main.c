@@ -52,7 +52,7 @@ char* getEntryType(unsigned char type_code){
         }
 }
 
-bool temporary(char* word, char* file_path){
+bool findInFile(char* word, char* file_path){
     FILE* file_traverse = getFileFromPath(file_path, "r+");
     FILE* file_search = getFileFromPath(file_path, "r+");
     bool result = false;
@@ -83,25 +83,8 @@ bool temporary(char* word, char* file_path){
     return result;
 }
 
-bool findInFile(char* word, FILE* file){
-    char* buffer = BUFFER;
-    bool result = false;
-    int bytes_left = fread(buffer, sizeof(char), 1, file);
-    
-    while(bytes_left){
-        if(strcmp(buffer, word) == 0) {
-            result = true;
-            printf("\033[1;31m%s\033[0m", buffer);
-
-        } else printf("%s", buffer);
-
-        bytes_left = fread(buffer, sizeof(char), 1, file);
-    }
-
-    return result;
-}
-
-void printDirectory(char* dir_path, char* word){
+void printDirectory(char* dir_path, char* word,
+                    int curr_depth, int max_depth){
     // opendir() returns a pointer of DIR type. 
     DIR* dir = opendir(dir_path);
 
@@ -111,10 +94,8 @@ void printDirectory(char* dir_path, char* word){
         return RETURN_COUDNT_OPEN_DIRECTORY;
     }
 
-    char absolutePath[PATH_MAX];
-    realpath(dir_path, absolutePath);
-
-    printInfo("Processing", absolutePath);
+    printInfo("Processing", dir_path);
+    printf("depth: %d\n", curr_depth);
 
     // Pointer for directory entry
     struct dirent *entry; 
@@ -143,11 +124,12 @@ void printDirectory(char* dir_path, char* word){
                 nextDirs[index] = entry->d_name;
                 index++;
             }
-        if(strcmp(getEntryType(entry->d_type), "file") == 0){
+        if(strcmp(getEntryType(entry->d_type), "file") == 0 &&
+            strstr(entry->d_name, ".txt") != NULL){
             char* filePath[PATH_MAX];
             sprintf(filePath, "%s/%s", dir_path, entry->d_name);
 
-            if (temporary(word, filePath)) {
+            if (findInFile(word, filePath)) {
                printf("> %s\n", entry->d_name); 
             }
         }
@@ -155,11 +137,23 @@ void printDirectory(char* dir_path, char* word){
 
     printf("\n");
 
-    for(int i=0; i<dirAmount; i++) {
-        char* nextPath[PATH_MAX];
+    if(curr_depth < max_depth){
+        for(int i=0; i<dirAmount; i++) {
+            pid_t pid_next = fork();
 
-        sprintf(nextPath, "%s/%s", dir_path, nextDirs[i]);
-        printDirectory(nextPath, word);
+            if(pid_next == 0){
+                char* nextPath[PATH_MAX];
+
+                sprintf(nextPath, "%s/%s", dir_path, nextDirs[i]);
+                printf("\033[0;34mBelow catalog PID number:\033[0m #%d\n", getpid());
+                printDirectory(nextPath, word, curr_depth+1, max_depth);
+
+                return RETURN_SUCCESS;
+            }
+
+            while (wait(NULL) > 0);
+
+        }
     }
     
     free(nextDirs);
@@ -171,8 +165,6 @@ void printDirectory(char* dir_path, char* word){
 
 // ---- Main program
 int main(int argc, char **argv){
-    
-    printf("[Main] Execute version: %s\n\n", "opendir(), readdir() and stat functions");
 
     if(argc != 4){
         error("INCORRECT_ARGUMENT_AMOUNT", "provide 1 argument: [catalog path]");
@@ -184,10 +176,21 @@ int main(int argc, char **argv){
     int depth = atoi(argv[3]);
 
     if(argc == 4){
-        printDirectory(dirPath, word);
+        pid_t pid = fork();
+
+        if(pid == 0 ) {
+            printf("\033[0;34mBelow catalog PID number:\033[0m #%d\n", getpid());
+            printDirectory(dirPath, word, 1, depth);
+
+            return RETURN_SUCCESS;
+        }
+
+        while (wait(NULL) > 0);
 
         return RETURN_SUCCESS;
     }
+
+
 
     error("RETURN_UNKNOWN_ERROR", "program occured unknown problem");
     return RETURN_UNKNOWN_ERROR;
