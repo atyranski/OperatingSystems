@@ -27,7 +27,7 @@ void isSignalPending(){
 
 // ---- Main program
 int main(int argc, char **argv){
-    printInfo("Exec function", "running");
+    printCheck("Exec function");
     isSignalPending();
 
     // raise(SIGNAL);

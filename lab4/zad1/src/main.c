@@ -64,8 +64,6 @@ int main(int argc, char **argv){
 
     char* command = argv[1];
 
-
-
     // Case for 'ignore' command
     if(strcmp(command, "ignore") == 0){
         if(signal(SIGNAL, SIG_IGN) != NULL) {  // SIG_IGN - ignoring incoming signal
@@ -110,11 +108,10 @@ int main(int argc, char **argv){
         return RETURN_INCORRECT_ARGUMENT_AMOUNT;
     }
 
+    // Just to get where parent ends and where child starts
+    printCheck("Parent");
     // Raising custom signal
     raise(SIGNAL);
-
-    // Just to get where parent ends and where child starts
-    printInfo("Process", "parent");
     isSignalPending();
     
     // Creating child proccess
@@ -127,31 +124,29 @@ int main(int argc, char **argv){
     
     // Child process operations
     if(pid == 0){
-        printInfo("Process", "child");
-
-        if(strcmp(command, "pending") == 0) {
-            isSignalPending();
-
-            // Ending child process if mode is 'pending'
-            return RETURN_SUCCESS;
-        }
+        printCheck("Child");
 
         // Checking in child process if signal is pending
-        raise(SIGNAL);
-        isSignalPending();
-        
-        if(execl("./exec_function", "exec_function", (char*) NULL) == -1) {
-            error("COUDNT_EXEC_FUNCTION", "program occured problem with executing function in execl() in child process");
-            return RETURN_COUDNT_EXEC_FUNCTION;
+        if(strcmp(command, "pending") != 0) {
+            raise(SIGNAL);
         }
+        isSignalPending();
 
         // Ending child process
         return RETURN_SUCCESS;
     }
 
-
     // Parent process waiting to all child process end
     while(wait(NULL) > 0);
+        
+    if(strcmp(command, "handler") != 0) {
+        if(execl("./exec_function", "exec_function", (char*) NULL) == -1) {
+            error("COUDNT_EXEC_FUNCTION", "program occured problem with executing function in execl() in child process");
+            return RETURN_COUDNT_EXEC_FUNCTION;
+        }
+
+        return RETURN_SUCCESS;
+    }
 
     return RETURN_SUCCESS;
 }

@@ -1,116 +1,89 @@
+// Przetestuj działanie trzech wybranych flag w funkcji sigation.
+// Jedną z nich powinna być flaga SA_SIGINFO.
+// Dla tej flagi zainstaluj procedurę obsługi sygnału (handler) dla odpowiednio dobranych sygnałów stosując składnie procedury handlera z trzema argumentami.
+// Wypisz i skomentuj (przygotowując odpowiednie scenariusze) trzy różne informacje,
+// a dodatkowo także numer sygnału oraz identyfikator PID procesu wysyłającego dostarczane w strukturze siginfo_t przekazywanej jako drugi argument funkcji handlera.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <math.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include "printutils.h"
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
-#define RETURN_INCORRECT_ARGUMENT_AMOUNT -2
-#define RETURN_COULDNT_OPEN_FILE -3
-#define PI 3.141592654
+#define RETURN_COULDNT_HANDLE_SIGNAL -1
+#define RETURN_COUDNT_HANDLE_SIGNAL -2
 
-double radiantToDegree(double randian){
-    return (randian * 180) / PI;
+void SA_SIGINFO_handler(int sig, siginfo_t *info, void *ucontext){
+    printf("---------------------------------------------\n");
+    printInfo("SA_SIGINFO", "informations");
+    printf("[1] signal number:\t%d\n", info->si_signo);
+    printf("[2] signal code:\t%d\n", info->si_code);
+    printf("[3] sending process PID:\t%d\n", info->si_pid);
+    printf("[4] real user ID of sending process:\t%d\n", info->si_uid);
+    printf("[5] exit value of signal:\t%d\n", info->si_status);
+    printf("[6] user times consumed:\t%Lf\n", (long double) info->si_utime);
+    printf("[6] system times consumed:\t%Lf\n", (long double) info->si_stime);
+    printf("[7] errno value:\t%d\n", info->si_errno);
+    printf("\n");
 }
 
-double getFunctionValue(double x){
-    return 4 * atan(x);
+void SA_RESETHAND_handler(int sig){
+    char message[1000];
+    sprintf(message, "after executing 'SA_RESETHAND_handler' function raising signal #%d will reset handler for this perticular signal. The second exectution of raise(SIGUSR1) should terminate the execution of this program.", sig);
+
+    printf("");
+
+    printInfo("SA_RESETHAND", message);
 }
-
-double integralValue(double x1, double x2){
-    return getFunctionValue(x2) - getFunctionValue(x1);
-}
-
-double sumPartials(int intervalAmount){
-    double result = 0;
-
-    for(int i=0; i<intervalAmount; i++){
-        char fileName[30];
-        char buffer[30];
-        double value;
-        sprintf(fileName, "out/w%d.txt", i + 1);
-
-        FILE* file = fopen(fileName,"r");
-        fgets(buffer, 30, file);
-        fclose(file);
-
-        sscanf(buffer, "%lf", &value);
-        result += value;
-    }
-
-    return result;
-};
 
 // ---- Main program
 int main(int argc, char **argv){
 
-    // TIME FUNC
-    struct timespec start_t, end_t;
-    struct tms* start_tms = calloc(1, sizeof(struct tms));
-    struct tms* end_tms = calloc(1, sizeof(struct tms));
-
-    times(start_tms);
-    if(clock_gettime(CLOCK_REALTIME, &start_t) == -1){
-        printf("clock gettime");
-        exit(EXIT_FAILURE);
-    }
-    // TIME FUNC
-
-    if(argc < 3 || argc > 3){
-        error("INCORRECT_ARGUMENT_AMOUNT", "provide: [interval] [number of intervals]");
-        return RETURN_INCORRECT_ARGUMENT_AMOUNT;
-    }
-
-    int intervalAmount = atoi(argv[2]);
-    double interval = 1.0/intervalAmount;
-
-    for(int i=0; i<intervalAmount; i++){
-        pid_t pid = fork();
-        // int status;
-
-        if(pid == 0){
-            double x1 = interval * (double) i;
-            double x2 = interval * (double) i + interval;
-            double result = integralValue(x1, x2);
-
-            char fileName[30];
-            sprintf(fileName, "out/w%d.txt", i + 1);
-
-            FILE* file = fopen(fileName,"wb");
-
-            if(file == NULL){
-                error("COULDNT_OPEN_FILE", "program cannot open file from provided path. Path is incorrect, file don't exist or don't have permission in order to read file.");
-                return RETURN_COULDNT_OPEN_FILE;
-            }
-
-            fprintf(file, "%f\n", result);
-            fclose(file);
-
-            return RETURN_SUCCESS;
-        }
-    }
-
-    while (wait(NULL) > 0);
-    double summary = sumPartials(intervalAmount);
+    // Testing flag 'SA_SIGINFO'
+    printCheck("SA_SIGINFO");
+    struct sigaction act_info;
+    act_info.sa_sigaction = SA_SIGINFO_handler;
+    sigemptyset(&act_info.sa_mask);
+    act_info.sa_flags = SA_SIGINFO;
     
-    char message[1000];
-    sprintf(message, "integral on range [0,1] of 4/(x^2 + 1) equals: %f", summary);
-    
-    printInfo("Summary", message);
+    if (sigaction(SIGRTMIN, &act_info, NULL) == -1){
+        error("COULDNT_HANDLE_SIGNAL", "program occured problem with handling 'SIGRTMIN' signal with flag 'SA_SIGINFO'");
+        return RETURN_COULDNT_HANDLE_SIGNAL;
+    }
+    if (sigaction(SIGRTMIN + 10, &act_info, NULL) == -1){
+        error("COULDNT_HANDLE_SIGNAL", "program occured problem with handling 'SIGRTMIN + 10' signal with flag 'SA_SIGINFO'");
+        return RETURN_COULDNT_HANDLE_SIGNAL;
+    }
+    if (sigaction(SIGRTMAX, &act_info, NULL) == -1){
+        error("COULDNT_HANDLE_SIGNAL", "program occured problem with handling 'SIGRTMAX' signal with flag 'SA_SIGINFO'");
+        return RETURN_COULDNT_HANDLE_SIGNAL;
+    }
 
-    // TIME FUNC
-    times(end_tms);
+    raise(SIGRTMIN);
+    raise(SIGRTMIN + 10);
+    raise(SIGRTMAX);
 
-    double real_time_in_ns = (end_t.tv_sec - start_t.tv_sec) + (end_t.tv_nsec - start_t.tv_nsec);
-    double time2 = (double) ((*end_tms).tms_cutime - (*start_tms).tms_cutime / sysconf(_SC_CLK_TCK));
-    double time3 = (double) ((*end_tms).tms_cstime - (*start_tms).tms_cstime / sysconf(_SC_CLK_TCK));
-    // TIME FUNC
+    // Testing flag 'SA_RESETHAND'
 
-    printf("\nReal time: %f ns", real_time_in_ns / 1000000000);
-    printf("\nSystem time: %f ns", time2);
-    printf("\nUser time: %f ns\n", time3);
+    // Testing flag 'SA_RESETHAND'
+    printCheck("SA_RESETHAND");
+    struct sigaction act_resethand;
+    sigemptyset(&act_resethand.sa_mask);
+    act_resethand.sa_handler = SA_RESETHAND_handler;
+    act_resethand.sa_flags = SA_RESETHAND ;
+
+    if (sigaction(SIGUSR1, &act_resethand, NULL) == -1){
+        error("COULDNT_HANDLE_SIGNAL", "program occured problem with handling 'SIGUSR1' signal with flag 'SA_RESETHAND'");
+        return RETURN_COULDNT_HANDLE_SIGNAL;
+    }
+
+    raise(SIGUSR1);
+    raise(SIGUSR1);
+
+    printf("Yay it works");
 
     return RETURN_SUCCESS;
 }
