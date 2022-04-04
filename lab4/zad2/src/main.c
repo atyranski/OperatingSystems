@@ -15,6 +15,7 @@
 #define RETURN_SUCCESS 0
 #define RETURN_COULDNT_HANDLE_SIGNAL -1
 #define RETURN_COUDNT_HANDLE_SIGNAL -2
+#define RETURN_COUDNT_FORK_PROCESS -3
 
 void SA_SIGINFO_handler(int sig, siginfo_t *info, void *ucontext){
     printf("---------------------------------------------\n");
@@ -32,17 +33,30 @@ void SA_SIGINFO_handler(int sig, siginfo_t *info, void *ucontext){
 
 void SA_RESETHAND_handler(int sig){
     char message[1000];
-    sprintf(message, "after executing 'SA_RESETHAND_handler' function raising signal #%d will reset handler for this perticular signal. The second exectution of raise(SIGUSR1) should terminate the execution of this program.", sig);
+    sprintf(message, "after executing 'SA_RESETHAND_handler' function raising signal #%d will reset handler for this perticular signal.\nThe second exectution of raise(SIGUSR1) should terminate the execution of this program.", sig);
 
     printf("");
 
     printInfo("SA_RESETHAND", message);
 }
 
+void SA_RESTART_handler(int signal){
+    printInfo("Restart", "going on");
+}
+
+void SA_RESTART_example(int time){
+    printf("Function will end if not interupted in: %d sec\n", time);
+    sleep(time);
+}
+
 // ---- Main program
 int main(int argc, char **argv){
 
-    // Testing flag 'SA_SIGINFO'
+    // SA_SIGINFO (since Linux 2.2)
+    //     The signal handler takes three arguments, not one.  In
+    //     this case, sa_sigaction should be set instead of
+    //     sa_handler.  This flag is meaningful only when
+    //     establishing a signal handler.
     printCheck("SA_SIGINFO");
     struct sigaction act_info;
     act_info.sa_sigaction = SA_SIGINFO_handler;
@@ -66,13 +80,33 @@ int main(int argc, char **argv){
     raise(SIGRTMIN + 10);
     raise(SIGRTMAX);
 
-    // Testing flag 'SA_RESETHAND'
+    // SA_RESTART
+    //     Provide behavior compatible with BSD signal semantics by
+    //     making certain system calls restartable across signals.
+    //     This flag is meaningful only when establishing a signal
+    //     handler.  See signal(7) for a discussion of system call
+    //     restarting.
+    printCheck("SA_RESTART");
+    struct sigaction act_restart;
+    act_restart.sa_sigaction = SA_RESTART_handler;
+    sigemptyset(&act_restart.sa_mask);
+    act_restart.sa_flags = SA_RESTART;
 
-    // Testing flag 'SA_RESETHAND'
+    if (sigaction(SIGINT, &act_restart, NULL) == -1){
+        error("COULDNT_HANDLE_SIGNAL", "program occured problem with handling 'SIGINT' signal with flag 'SA_RESTART'");
+        return RETURN_COULDNT_HANDLE_SIGNAL;
+    }
+
+    SA_RESTART_example(5);
+
+    // SA_RESETHAND
+    //     Restore the signal action to the default upon entry to the
+    //     signal handler.  This flag is meaningful only when
+    //     establishing a signal handler.
     printCheck("SA_RESETHAND");
     struct sigaction act_resethand;
-    sigemptyset(&act_resethand.sa_mask);
     act_resethand.sa_handler = SA_RESETHAND_handler;
+    sigemptyset(&act_resethand.sa_mask);
     act_resethand.sa_flags = SA_RESETHAND ;
 
     if (sigaction(SIGUSR1, &act_resethand, NULL) == -1){

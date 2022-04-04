@@ -115,7 +115,7 @@ int main(int argc, char **argv){
     isSignalPending();
     
     // Creating child proccess
-    int pid=fork();
+    int pid = fork();
 
     if (pid == -1){
         error("COUDNT_FORK_PROCESS", "program occured problem with creating a new process");
