@@ -8,6 +8,7 @@ LIB_NAME = printutils
 LIB_PATH = src/printutils.c
 MAIN_PATH = src/main.c
 EXEC_FUNCTION_PATH = src/exec_function.c
+COMMANDS_PATH = commands/example_1.txt
 
 recompile: clean compile_lib compile_main compile_exec_function run
 
@@ -29,7 +30,4 @@ clean:
 	rm -f exec_function
 
 run:
-	./main ignore
-	./main handler
-	./main mask
-	./main pending
+	./main $(COMMANDS_PATH)
