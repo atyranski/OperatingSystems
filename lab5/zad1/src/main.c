@@ -10,6 +10,8 @@
 #define RETURN_SUCCESS 0
 #define RETURN_INCORRECT_ARGUMENT_AMOUNT -1
 #define RETURN_COULDNT_OPEN_FILE -2
+#define RETURN_COULDNT_PIPE -3
+#define RETURN_COUDNT_FORK_PROCESS -4
 
 typedef struct {
     char *name;
@@ -33,6 +35,24 @@ typedef struct {
     int secquences_capacity;
 } Program;
 
+int** getDescriptors(int amount){
+    int **descriptors = calloc(amount, sizeof(int*));
+
+    for(int i=1; i<amount; i++){
+        descriptors[i] = calloc(2, sizeof(int));
+
+        if(pipe(descriptors[i]) == -1){
+            error("COULDNT_PIPE", "program occured problem and couldnt make pipe");
+            return RETURN_COULDNT_PIPE;
+        }
+    }
+
+    descriptors[0] = calloc(2, sizeof(int));
+    descriptors[0][0] = STDIN_FILENO;
+    descriptors[0][1] = STDOUT_FILENO;
+
+    return descriptors;
+}
 
 FILE* getFileFromPath(char* path, char* mode){
     
@@ -98,6 +118,8 @@ void printSequence(Sequence *sequence){
 void printProgram(Program *program){
     // printComponent(program->components[0]);
     printInfo("Printing", "program");
+    printf("[components]:\n\t> amount: %d\n\t> capacity: %d\n", program->components_amount, program->components_capacity);
+    printf("[sequences]:\n\t> amount: %d\n\t> capacity: %d\n", program->secquences_amount, program->secquences_capacity);
     for(int i=0; i<program->components_amount; i++) printComponent(program->components[i]);
     for(int i=0; i<program->secquences_amount; i++) printSequence(program->sequences[i]);
 }
@@ -212,14 +234,15 @@ Sequence *parseSequence(char *line){
     while(*line != 0){
         start = line;
 
-        while (*line != 0 && *line != '|') line++;
+        while (*line != 0 && *line != ' ') line++;
 
         line++;
         end = line;
 
         lenght = end - start-1;
-        name = malloc(lenght * sizeof(char));
+        if(lenght == 0) continue;
 
+        name = malloc(lenght * sizeof(char));
         for(int i=0; i<lenght; i++){
             name[i] = *(start + i);
         }
@@ -297,19 +320,62 @@ Program *parseProgram(FILE *file){
     Program *program = calloc(1, sizeof(Program));
     program->components_capacity = 3;
     program->components_amount = 0;
-    program->components = calloc(program->components_capacity, sizeof(Component));
+    program->components = calloc(program->components_capacity, sizeof(Component*));
     program->secquences_capacity = 3;
     program->secquences_amount = 0;
-    program->sequences = calloc(program->secquences_capacity, sizeof(Sequence));
+    program->sequences = calloc(program->secquences_capacity, sizeof(Sequence*));
 
     char *file_content = getFileContent(file);
 
     // printf("%s\n", file_content);
     readLines(file_content, program);
 
-    printProgram(program);
+    // printProgram(program);
 
     return program;
+}
+
+int getCommandAmount(Sequence *sequence, Component **components, int components_amount){
+    int result = 0;
+
+    for(int i=0; i<sequence->names_amount; i++){
+        for(int j=0; j<components_amount; j++){
+            if(strcmp(sequence->components_names[i], components[j]->name) == 0) {
+                // printf("\t>%s\t%d\n", sequence->components_names[i], components[j]->commands_amount);
+                result += components[j]->commands_amount;
+            }
+        }
+    }
+
+    return result;
+}
+
+void executeProgram(Program *program){
+    for(int i=0; i<program->secquences_amount; i++){
+        printf("\nSequence: %d\n", i+1);
+        Sequence *sequence = program->sequences[i];
+         
+        int command_amount = getCommandAmount(sequence, program->components, program->components_amount);
+        printf("commands: %d\n", command_amount);
+        int **descriptors = getDescriptors(command_amount);
+
+        for(int j=0; j<command_amount; j++){
+
+            int pid = fork();
+
+            if(pid == -1){
+                error("COUDNT_FORK_PROCESS", "program occured problem with creating a new process");
+                return RETURN_COUDNT_FORK_PROCESS;
+            }
+
+            if(pid == 0){
+                
+            }
+
+        }
+
+
+    }
 }
 
 // ---- Main program
@@ -330,7 +396,10 @@ int main(int argc, char **argv){
 
     // Get data from file and put into structs
     program = parseProgram(file);
+
+    executeProgram(program);
     
+    // Close files and free memory
     close(file);
     freeProgram(program);
 
