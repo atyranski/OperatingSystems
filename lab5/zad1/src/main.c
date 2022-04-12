@@ -38,7 +38,7 @@ typedef struct {
 int** getDescriptors(int amount){
     int **descriptors = calloc(amount, sizeof(int*));
 
-    for(int i=1; i<amount; i++){
+    for(int i=0; i<amount-1; ++i){
         descriptors[i] = calloc(2, sizeof(int));
 
         if(pipe(descriptors[i]) == -1){
@@ -47,9 +47,9 @@ int** getDescriptors(int amount){
         }
     }
 
-    descriptors[0] = calloc(2, sizeof(int));
-    descriptors[0][0] = STDIN_FILENO;
-    descriptors[0][1] = STDOUT_FILENO;
+    descriptors[amount-1] = calloc(2, sizeof(int));
+    descriptors[amount-1][0] = STDIN_FILENO;
+    descriptors[amount-1][1] = STDOUT_FILENO;
 
     return descriptors;
 }
@@ -112,7 +112,7 @@ void printSequence(Sequence *sequence){
     printf("[components_names]: \n");
     for(int i=0; i<sequence->names_amount; i++) printf("\t> %s\n", sequence->components_names[i]);
     printf("[amount]: %d\n", sequence->names_amount);
-    printf("[capacity]: %d\n\n", sequence->capacity);
+    printf("[capacity]: %d\n", sequence->capacity);
 }
 
 void printProgram(Program *program){
@@ -158,6 +158,11 @@ void freeSequence(Sequence *sequence){
 void freeProgram(Program *program){
     for(int i=0; i<program->components_amount; i++) freeComponent(program->components[i]);
     for(int i=0; i<program->secquences_amount; i++) freeSequence(program->sequences[i]);
+}
+
+void freeDescriptors(int **descriptors, int size){
+    for(int i=0; i<size; i++) free(descriptors[i]);
+    free(descriptors);
 }
 
 Component *parseComponent(char *line){
@@ -350,16 +355,83 @@ int getCommandAmount(Sequence *sequence, Component **components, int components_
     return result;
 }
 
+char **getCurrentCommand(Sequence *sequence, Component **components, int components_amount, int position){
+    int n = 1;
+    char **command = calloc(2, sizeof(char*));
+    // Command name max length 15, args max length 34
+    command[0] = calloc(15, sizeof(char));
+    command[1] = calloc(35, sizeof(char));
+    char *start, *end;
+    int lenght;
+
+    for(int i=0; i<sequence->names_amount; i++){
+        for(int j=0; j<components_amount; j++){
+            if(strcmp(sequence->components_names[i], components[j]->name) == 0) {
+                for(int k=0; k<components[j]->commands_amount; k++){
+                    if(n == position) {
+                        char *text = components[j]->comands[k];
+
+                        // Setting command name
+                        start = text;
+
+                        while(*text != 0 && *text != ' ') {
+                            text++;
+                        }
+
+                        text++;
+                        end = text;
+
+                        lenght = end - start-1;
+
+                        for(int i=0; i<lenght; i++){
+                            command[0][i] = *(start + i);
+                        }
+
+                        // Setting args
+                        start = text;
+
+                        while(*text != 0 && *text != ' ') {
+                            text++;
+                        }
+
+                        text++;
+                        end = text;
+
+                        lenght = end - start-1;
+
+                        for(int i=0; i<lenght; i++){
+                            command[1][i] = *(start + i);
+                        }
+
+                        return command;
+                    } else n++;
+                }
+            }
+        }
+    }
+
+    return command;
+}
+
 void executeProgram(Program *program){
     for(int i=0; i<program->secquences_amount; i++){
         printf("\nSequence: %d\n", i+1);
         Sequence *sequence = program->sequences[i];
+        // printSequence(sequence);
          
         int command_amount = getCommandAmount(sequence, program->components, program->components_amount);
-        printf("commands: %d\n", command_amount);
+        // printf("commands: %d\n", command_amount);
         int **descriptors = getDescriptors(command_amount);
+        int position = 1;
+        char **command_current;
 
         for(int j=0; j<command_amount; j++){
+            command_current = getCurrentCommand(sequence, program->components, program->components_amount,  position);
+            printf("Current command: [name] %s\t[args] %s\n", command_current[0], command_current[1]);
+
+            int prev_position = (position + command_amount - 1) % command_amount;
+            printf("POSITION: %d\n", position);
+            printf("PREV: %d\n", prev_position);
 
             int pid = fork();
 
@@ -369,11 +441,32 @@ void executeProgram(Program *program){
             }
 
             if(pid == 0){
+                for(int k=0; k<command_amount; k++){
+                    if(k != position && k != prev_position){
+                        if (descriptors[k][0] != STDIN_FILENO) close(descriptors[k][0]);
+                        if (descriptors[k][1] != STDOUT_FILENO) close(descriptors[k][1]);
+                    }
+                }
+
+                close(descriptors[position][0]);
+                close(descriptors[prev_position][1]);
+
+                dup2(descriptors[position][1], STDOUT_FILENO);
+                dup2(descriptors[prev_position][0], STDIN_FILENO);
+
+                char *args[] = {command_current[0], command_current[1], NULL};
+
+                execvp(command_current[0], args);
                 
+                return RETURN_SUCCESS;
             }
 
+            position++;
+            while (wait(NULL) == 0);
         }
 
+        freeDescriptors(descriptors, command_amount);
+        free(command_current);
 
     }
 }

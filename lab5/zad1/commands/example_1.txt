@@ -1,8 +1,4 @@
 component1 = cat /etc/passwd | wc -l
-component2 = ls | grep '^a'
 component3 = grep 11
 
-component1 | component3 | component2
 component1
-component2
-component3
