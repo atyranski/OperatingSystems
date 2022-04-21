@@ -38,7 +38,7 @@ typedef struct {
 int** getDescriptors(int amount){
     int **descriptors = calloc(amount, sizeof(int*));
 
-    for(int i=0; i<amount-1; ++i){
+    for(int i=0; i<amount; ++i){
         descriptors[i] = calloc(2, sizeof(int));
 
         if(pipe(descriptors[i]) == -1){
@@ -47,7 +47,7 @@ int** getDescriptors(int amount){
         }
     }
 
-    descriptors[amount-1] = calloc(2, sizeof(int));
+    // descriptors[amount-1] = calloc(2, sizeof(int));
     descriptors[amount-1][0] = STDIN_FILENO;
     descriptors[amount-1][1] = STDOUT_FILENO;
 
@@ -356,7 +356,7 @@ int getCommandAmount(Sequence *sequence, Component **components, int components_
 }
 
 char **getCurrentCommand(Sequence *sequence, Component **components, int components_amount, int position){
-    int n = 1;
+    int n = 0;
     char **command = calloc(2, sizeof(char*));
     // Command name max length 15, args max length 34
     command[0] = calloc(15, sizeof(char));
@@ -414,57 +414,82 @@ char **getCurrentCommand(Sequence *sequence, Component **components, int compone
 }
 
 void executeProgram(Program *program){
+
+    // processing every sequence in program
     for(int i=0; i<program->secquences_amount; i++){
         printf("\nSequence: %d\n", i+1);
         Sequence *sequence = program->sequences[i];
         // printSequence(sequence);
          
+        // getting current command component amount
         int command_amount = getCommandAmount(sequence, program->components, program->components_amount);
         // printf("commands: %d\n", command_amount);
+
+        // generating new set of descriptors that fits amount of our components in command
         int **descriptors = getDescriptors(command_amount);
-        int position = 1;
+
+        int position = 0;
         char **command_current;
 
+        // processing every component in sequence
         for(int j=0; j<command_amount; j++){
-            command_current = getCurrentCommand(sequence, program->components, program->components_amount,  position);
-            printf("Current command: [name] %s\t[args] %s\n", command_current[0], command_current[1]);
 
+            // getting new component from command based on the position
+            command_current = getCurrentCommand(sequence, program->components, program->components_amount,  position);
+            // printf("Current command: [name] %s\t[args] %s\n", command_current[0], command_current[1]);
+
+            // getting position of the previously used descriptor
             int prev_position = (position + command_amount - 1) % command_amount;
-            printf("POSITION: %d\n", position);
-            printf("PREV: %d\n", prev_position);
 
             int pid = fork();
 
+            // handling issues during the fork operation
             if(pid == -1){
                 error("COUDNT_FORK_PROCESS", "program occured problem with creating a new process");
                 return RETURN_COUDNT_FORK_PROCESS;
             }
 
+            // entering child process
             if(pid == 0){
-                for(int k=0; k<command_amount; k++){
+                // printf("index: %d prev: %d\n", position, prev_position);
+                // printf("Current command: [name] %s\t[args] %s\n", command_current[0], command_current[1]);
+
+                // closing unused descriptors in this child proces 
+                for(int k=0; k<command_amount; ++k){
                     if(k != position && k != prev_position){
                         if (descriptors[k][0] != STDIN_FILENO) close(descriptors[k][0]);
                         if (descriptors[k][1] != STDOUT_FILENO) close(descriptors[k][1]);
                     }
                 }
-
                 close(descriptors[position][0]);
                 close(descriptors[prev_position][1]);
+                // printf("index: %d prev: %d\n", position, prev_position);
 
-                dup2(descriptors[position][1], STDOUT_FILENO);
+                // duplicate the standard i/o descriptors to descriptors at our positions
                 dup2(descriptors[prev_position][0], STDIN_FILENO);
-
+                dup2(descriptors[position][1], STDOUT_FILENO);
+                
+                // executing command
                 char *args[] = {command_current[0], command_current[1], NULL};
-
                 execvp(command_current[0], args);
                 
                 return RETURN_SUCCESS;
             }
 
             position++;
-            while (wait(NULL) == 0);
         }
 
+        // closing decsriptors for the parent process to avoid stopping execution of program
+        for (int p=0; p<command_amount; ++p){
+            if(descriptors[p][0] != STDIN_FILENO) close(descriptors[p][0]);
+            if(descriptors[p][1] != STDOUT_FILENO) close(descriptors[p][1]);
+        }
+
+        // waiting for all child processes to finish
+        int status = 0;
+        while ((wait(&status)) > 0);
+
+        // free all descriptors and command for this sequence
         freeDescriptors(descriptors, command_amount);
         free(command_current);
 
