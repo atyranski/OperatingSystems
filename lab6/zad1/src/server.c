@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <fcntl.h>
+#include <time.h>
 
 // ---- Server globals
 bool running = true;
@@ -22,7 +23,7 @@ int server_queue;
 Request get_request(int expected_type){
     Request request;
 
-    if((msgrcv(server_queue, &request, 128, expected_type, 0)) == -1){
+    if((msgrcv(server_queue, &request, 128, expected_type, 0)) == -1 && running){
         error("COULDNT_RECEIVE_MESSAGE", "msgrcv() couldn't received message");
         printf("Errno: %s\n", strerror(errno));
     }
@@ -31,15 +32,23 @@ Request get_request(int expected_type){
 }
 
 bool send_request(int recipent_id, Command type, const char *content){
+    time_t raw_time;
+    struct tm * timeinfo;
+
+    time(&raw_time);
+    timeinfo = localtime (&raw_time);
+
     Request request;
 
     request.type = type;
     request.sender_id = server_queue;
     request.recipent_id = recipent_id;
+    sprintf(request.date, "%d:%d:%d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
     strcpy(request.content, content);
 
 
-    if(msgsnd(recipent_id, &request, 128, 0) == -1){
+    if(msgsnd(recipent_id, &request, 128, 0) == -1 && running){
         error("COULDNT_SEND_MESSAGE", "msgsnd() couldn't send message");
         printf("Errno: %s\n", strerror(errno));
         return false;
@@ -76,7 +85,7 @@ void action_send_all(int sender_id, const char *content){
 
     for(int i=0; i<MAX_CLIENTS; i++){
         if(clients_queues[i] != sender_id && clients_queues[i] != -1) {
-            send_request(clients_queues[i], ALL, content);
+            action_send_one(sender_id, clients_queues[i], content);
         }
     }
 }
@@ -87,7 +96,7 @@ void action_send_one(int sender_id, int recipent_id, const char *content){
     sprintf(message, "client id#%d requested an ONE operation to client id#%d with content: %s", sender_id, recipent_id, content);
     printOper("ONE", message);
 
-    send_request(recipent_id, ALL, content);
+    send_request(recipent_id, ONE, content);
 }
 
 void action_stop(int sender_id){
@@ -131,23 +140,25 @@ void action_connect(int sender_id){
 }
 
 void action_stop_server(){
-    printf("\n");
-    printOper("STOP", "stopping work");
+    if(running){
+        printf("\n");
+        printOper("STOP", "stopping work");
 
-    for(int i=0; i<MAX_CLIENTS; i++){
-        if(clients_queues[i] != -1){
-            send_request(clients_queues[i], STOP, "");
+        for(int i=0; i<MAX_CLIENTS; i++){
+            if(clients_queues[i] != -1){
+                send_request(clients_queues[i], STOP, "");
+            }
         }
+
+        if((msgctl(server_queue, IPC_RMID, NULL)) == -1){
+            error("COULDNT_REMOVE_QUEUE", "msgctl() couldn't remove server queue");
+            printf("Errno: %s\n", strerror(errno));
+        }
+
+        printInfo("STOP", "server successfully stopped");
+
+        running = false;
     }
-
-    if((msgctl(server_queue, IPC_RMID, NULL)) == -1){
-        error("COULDNT_REMOVE_QUEUE", "msgctl() couldn't remove server queue");
-        printf("Errno: %s\n", strerror(errno));
-    }
-
-    printInfo("STOP", "server successfully stopped");
-
-    running = false;
 }
 
 // initializing server
@@ -193,12 +204,21 @@ int main(int argc, char **argv){
     int init_result;
     char message[100];
 
+    time_t raw_time;
+    struct tm * timeinfo;
+
+    time(&raw_time);
+    timeinfo = localtime (&raw_time);
+    printf("Starting: %d:%d:%d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+    FILE *output_file = fopen("out/log.txt", "a");
+
     if((init_result = initialize()) != 0) return init_result;
 
     while(running){
         Request request = get_request(EVERY_REQUEST_TYPE);
 
-        if(&(request) != NULL){
+        if(&(request) != NULL && running){
             printf("\nsender_id: %d | recipent_id: %d | type: %d | content: %d \n", request.sender_id, request.recipent_id, request.type, request.content);
 
             switch(request.type){
@@ -221,8 +241,15 @@ int main(int argc, char **argv){
                     sprintf(message, "server received a message with incorrect type from client id#%d", request.sender_id, request.recipent_id);
                     error("INCORRECT_MESSAGE_TYPE", message);
             }
+
+            // time(&raw_time);
+            // timeinfo = localtime (&raw_time);
+            fprintf(output_file, "[%s] type: %ld | send_by: %d | to: %d | text: %s\n", request.date, request.type, request.sender_id, request.recipent_id, request.content);
+            fflush(output_file);
         }
     }
+
+    close(output_file);
 
     return RETURN_SUCCESS;
 }

@@ -37,6 +37,7 @@ clean:
 	rm -f libprintutils.a
 	rm -f client
 	rm -f server
+	rm -f out/log.txt
 
 run_server:
 	./server

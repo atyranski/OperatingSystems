@@ -29,11 +29,19 @@ Request get_request(int recipent, int expected_type){
 }
 
 void send_request(int recipent_id, Command type, const char *content){
+    time_t raw_time;
+    struct tm * timeinfo;
+
+    time(&raw_time);
+    timeinfo = localtime (&raw_time);
+
     Request request;
 
     request.type = type;
-    request.sender_id = client_queue;
+    request.sender_id = server_queue;
     request.recipent_id = recipent_id;
+    sprintf(request.date, "%d:%d:%d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
     strcpy(request.content, content);
 
 
@@ -136,7 +144,7 @@ void get_command(){
         start = line;
         while(*line != ' ') line ++;
         end = line;
-        length = end - start - 1;
+        length = end - start;
         id = calloc(length, sizeof(char));
         for(int i=0; i<length; i++){
             id[i] = *(start + i);
@@ -152,7 +160,7 @@ void get_command(){
             content[i] = *(start + i);
         }
 
-        printf("%s %s\n", id, content);
+        // printf("%s %s\n", id, content);
 
         send_request(atoi(id), ONE, content);
 
@@ -162,11 +170,17 @@ void get_command(){
     }
 
     if(strcmp(command, "REFRESH") == 0) {
-        printf("#Refreshing\n");
         Request request;
 
+        if((msgrcv(client_queue, &request, MAX_REQUEST_SIZE, STOP, IPC_NOWAIT)) != -1 && running){
+            action_stop();
+            // printf("Errno: %s\n", strerror(errno));
+        }
 
-
+        if((msgrcv(client_queue, &request, MAX_REQUEST_SIZE, ONE, IPC_NOWAIT)) != -1 && running){
+            // printf("Errno: %s\n", strerror(errno));
+            display_message(request);
+        }
     }
 }
 
@@ -216,6 +230,10 @@ int initialize(){
 }
 
 // other
+void display_message(Request request){
+    printf("[%s | %d] %d: '%s'\n", request.date, request.type, request.sender_id, request.content);
+}
+
 void display_commands(){
     printf("Available commands:\n");
     printf("LIST\t\t\t-listing currently connected clients\n");
@@ -225,7 +243,7 @@ void display_commands(){
 }
 
 void display_prompt(){
-    printf("\033[0;34mAction:\033[0m ");
+    printf("\n\033[0;34mAction:\033[0m ");
 }
 
 // ---- Main program
@@ -239,27 +257,6 @@ int main(int argc, char **argv){
     if((init_result = initialize()) != 0) return init_result;
 
     while(running) get_command();
-
-    // while(running){
-    //     display_prompt();
-    //     Request request = get_request(server_queue, EVERY_REQUEST_TYPE);
-
-    //     if(&(request) != NULL && running){
-    //         printf("sender_id: %d | recipent_id: %d | type: %d | content: %d \n", request.sender_id, request.recipent_id, request.type, request.content);
-
-    //         switch(request.type){
-    //             case ALL:
-    //                 break;
-
-    //             case ONE:
-    //                 break;
-
-    //             default:
-    //                 sprintf(message, "client received a message with incorrect type from client id#%d", request.sender_id, request.recipent_id);
-    //                 error("INCORRECT_MESSAGE_TYPE", message);
-    //         }
-    //     }
-    // }
 
     return RETURN_SUCCESS;
 }
