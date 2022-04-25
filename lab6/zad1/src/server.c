@@ -23,7 +23,7 @@ int server_queue;
 Request get_request(int expected_type){
     Request request;
 
-    if((msgrcv(server_queue, &request, 128, expected_type, 0)) == -1 && running){
+    if((msgrcv(server_queue, &request, MAX_REQUEST_SIZE, expected_type, 0)) == -1 && running){
         error("COULDNT_RECEIVE_MESSAGE", "msgrcv() couldn't received message");
         printf("Errno: %s\n", strerror(errno));
     }
@@ -31,7 +31,7 @@ Request get_request(int expected_type){
     return request;
 }
 
-bool send_request(int recipent_id, Command type, const char *content){
+bool send_request(int sender_id, int recipent_id, Command type, const char *content){
     time_t raw_time;
     struct tm * timeinfo;
 
@@ -41,14 +41,14 @@ bool send_request(int recipent_id, Command type, const char *content){
     Request request;
 
     request.type = type;
-    request.sender_id = server_queue;
+    request.sender_id = sender_id;
     request.recipent_id = recipent_id;
-    sprintf(request.date, "%d:%d:%d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    sprintf(request.date, "%d:%d:%d\0",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
     strcpy(request.content, content);
 
 
-    if(msgsnd(recipent_id, &request, 128, 0) == -1 && running){
+    if(msgsnd(recipent_id, &request, MAX_REQUEST_SIZE, 0) == -1 && running){
         error("COULDNT_SEND_MESSAGE", "msgsnd() couldn't send message");
         printf("Errno: %s\n", strerror(errno));
         return false;
@@ -74,7 +74,7 @@ void action_list_clients(int sender_id){
         }
     }
 
-    send_request(sender_id, LIST, response);
+    send_request(server_queue, sender_id, LIST, response);
 }
 
 void action_send_all(int sender_id, const char *content){
@@ -96,7 +96,7 @@ void action_send_one(int sender_id, int recipent_id, const char *content){
     sprintf(message, "client id#%d requested an ONE operation to client id#%d with content: %s", sender_id, recipent_id, content);
     printOper("ONE", message);
 
-    send_request(recipent_id, ONE, content);
+    send_request(sender_id, recipent_id, ONE, content);
 }
 
 void action_stop(int sender_id){
@@ -120,7 +120,7 @@ void action_connect(int sender_id){
 
     if(client_amount >= MAX_CLIENTS){
         error("SERVER_IS_FULL", "server is full and cannot connect another client");
-        send_request(sender_id, CONNECT, "full");
+        send_request(server_queue, sender_id, CONNECT, "full");
         return;
     }
 
@@ -131,7 +131,7 @@ void action_connect(int sender_id){
 
     clients_queues[new_client_id] = sender_id;
     
-    if(!send_request(sender_id, CONNECT, "ok")) return;
+    if(!send_request(server_queue, sender_id, CONNECT, "ok")) return;
 
     sprintf(message, "client id#%d (index: #%d) connected to the server", sender_id, new_client_id);
     printInfo("CONNECT", message);
@@ -146,7 +146,7 @@ void action_stop_server(){
 
         for(int i=0; i<MAX_CLIENTS; i++){
             if(clients_queues[i] != -1){
-                send_request(clients_queues[i], STOP, "");
+                send_request(server_queue, clients_queues[i], STOP, "");
             }
         }
 
@@ -244,7 +244,7 @@ int main(int argc, char **argv){
 
             // time(&raw_time);
             // timeinfo = localtime (&raw_time);
-            fprintf(output_file, "[%s] type: %ld | send_by: %d | to: %d | text: %s\n", request.date, request.type, request.sender_id, request.recipent_id, request.content);
+            fprintf(output_file, "%s\ttype: %ld | send_by: %d | to: %d | text: %s\n", request.date, request.type, request.sender_id, request.recipent_id, request.content);
             fflush(output_file);
         }
     }

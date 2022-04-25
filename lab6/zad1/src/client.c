@@ -38,9 +38,9 @@ void send_request(int recipent_id, Command type, const char *content){
     Request request;
 
     request.type = type;
-    request.sender_id = server_queue;
+    request.sender_id = client_queue;
     request.recipent_id = recipent_id;
-    sprintf(request.date, "%d:%d:%d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    sprintf(request.date, "%d:%d:%d\0",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
     strcpy(request.content, content);
 
@@ -117,6 +117,8 @@ void get_command(){
 
     if(strcmp(command, "LIST") == 0) {
         action_list();
+
+        return;
     }
 
     if(strcmp(command, "STOP") == 0) {
@@ -137,6 +139,8 @@ void get_command(){
         send_request(-1, ALL, content);
 
         printInfo("ALL", "message send to all connected clients");
+
+        return;
     }
 
     if(strcmp(command, "ONE") == 0) {
@@ -167,21 +171,24 @@ void get_command(){
         char message[100];
         sprintf(message, "message send to client id#%d", atoi(id));
         printInfo("ONE", message);
+
+        return;
     }
 
-    if(strcmp(command, "REFRESH") == 0) {
+    if(strcmp(command, "REFRESH") == 0) {  
         Request request;
 
         if((msgrcv(client_queue, &request, MAX_REQUEST_SIZE, STOP, IPC_NOWAIT)) != -1 && running){
             action_stop();
-            // printf("Errno: %s\n", strerror(errno));
         }
 
         if((msgrcv(client_queue, &request, MAX_REQUEST_SIZE, ONE, IPC_NOWAIT)) != -1 && running){
-            // printf("Errno: %s\n", strerror(errno));
             display_message(request);
         }
+        return;
     }
+
+    printf("Incorrect command\n");
 }
 
 // initialization

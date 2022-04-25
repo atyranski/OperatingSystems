@@ -27,7 +27,7 @@ typedef struct {
     long type;
     int sender_id;
     int recipent_id;
-    char date[8];
+    char date[9];
     char content[MAX_REQUEST_SIZE];
 } Request;
 
