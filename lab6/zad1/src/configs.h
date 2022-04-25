@@ -8,6 +8,7 @@
 #define RETURN_COULDNT_CREATE_CLIENT -3
 #define RETURN_SERVER_IS_FULL -4
 #define RETURN_COULDNT_RECEIVE_MESSAGE -5
+#define RETURN_UNEXPECTED_VALUE -6
 
 // ---- Server configs
 #define MAX_CLIENTS 3
@@ -33,7 +34,6 @@ typedef enum {
     ONE = 3,
     STOP = 4,
     CONNECT = 5,
-    DISCONNECT = 6,
 } Command;
 
 #endif

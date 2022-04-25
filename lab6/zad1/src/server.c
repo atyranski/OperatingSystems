@@ -14,7 +14,7 @@
 // ---- Server globals
 bool running = true;
 int *clients_queues;
-int client_next = 0;
+int client_amount = 0;
 int server_queue;
 
 
@@ -51,7 +51,7 @@ bool send_request(int recipent_id, Command type, const char *content){
 // server actions
 void action_list_clients(int sender_id){
     char message[100];
-    sprintf(message, "client id#%d (queue: #%d) requested a LIST operation", client_next, sender_id);
+    sprintf(message, "client id#%d requested a LIST operation", sender_id);
     printOper("LIST", message);
 }
 
@@ -64,31 +64,43 @@ void action_send_one(int sender_id, int recipent_id, const char *content){
 }
 
 void action_stop(int sender_id){
+    char message[100];
 
+    for(int i=0; i<MAX_CLIENTS; i++) {
+        if(clients_queues[i] == sender_id) clients_queues[i] = -1;
+    }
+
+    sprintf(message, "client id#%d disconnected from the server", sender_id);
+    printInfo("STOP", message);
+
+    client_amount--;
 }
 
 void action_connect(int sender_id){
     char message[100];
-    char id_to_char[4];
 
     sprintf(message, "client with queue_id #%d trying to connect to the server", sender_id);
     printOper("CONNECT", message);
 
-    if(client_next >= MAX_CLIENTS){
+    if(client_amount >= MAX_CLIENTS){
         error("SERVER_IS_FULL", "server is full and cannot connect another client");
         send_request(sender_id, CONNECT, "full");
         return;
     }
 
-    clients_queues[client_next] = sender_id;
-    
-    sprintf(id_to_char, "%d", client_next);
-    if(!send_request(sender_id, CONNECT, id_to_char)) return;
+    int new_client_id;
+    for(new_client_id = 0; new_client_id < MAX_CLIENTS; new_client_id++){
+        if(clients_queues[new_client_id] == -1) break;
+    }
 
-    sprintf(message, "client id#%d (queue: #%d) connected to the server", client_next, sender_id);
+    clients_queues[new_client_id] = sender_id;
+    
+    if(!send_request(sender_id, CONNECT, "ok")) return;
+
+    sprintf(message, "client id#%d (index: #%d) connected to the server", sender_id, new_client_id);
     printInfo("CONNECT", message);
 
-    client_next++;
+    client_amount++;
 }
 
 // initializing server
@@ -156,12 +168,10 @@ int main(int argc, char **argv){
                     action_connect(request.sender_id); break;
 
                 default:
-                    sprintf(message, "server received a message with incorrect type from client id#%d to cliebt id#%d", request.sender_id, request.recipent_id);
+                    sprintf(message, "server received a message with incorrect type from client id#%d", request.sender_id, request.recipent_id);
                     error("INCORRECT_MESSAGE_TYPE", message);
             }
         }
-
-        sleep(2);
     }
 
     return RETURN_SUCCESS;
