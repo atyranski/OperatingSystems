@@ -80,7 +80,11 @@ void action_stop(){
 }
 
 void action_list(){
+    send_request(server_queue, LIST, "");
 
+    Request request = get_request(client_queue, LIST);
+
+    printf("%s", request.content);
 }
 
 void get_command(){
@@ -94,6 +98,7 @@ void get_command(){
 
     start = line;
     while(*line != 0 && *line != ' ') line++;
+    if(*line == ' ') line++;
     end = line;
     length = end - start - 1;
     command = calloc(length, sizeof(char));
@@ -103,27 +108,65 @@ void get_command(){
     }
 
     if(strcmp(command, "LIST") == 0) {
-        send_request(server_queue, LIST, "");
-
-        Request request = get_request(client_queue, LIST);
-
-        printf("%s", request.content);
+        action_list();
     }
 
     if(strcmp(command, "STOP") == 0) {
         exit(0);
     }
 
-    if(strcmp(command, "ALL") == 0) {
-        printf("Commencing: LIST\n");
+    if(strcmp(command, "ALL") == 0) {        
+        char *content;
+        start = line;
+        while(*line != 0) line++;
+        end = line;
+        length = end - start - 1;
+        content = calloc(length, sizeof(char));
+        for(int i=0; i<length; i++){
+            content[i] = *(start + i);
+        }
+
+        send_request(-1, ALL, content);
+
+        printInfo("ALL", "message send to all connected clients");
     }
 
     if(strcmp(command, "ONE") == 0) {
-        printf("Commencing: STOP\n");
+        char *id, *content;
+        start = line;
+        while(*line != ' ') line ++;
+        end = line;
+        length = end - start - 1;
+        id = calloc(length, sizeof(char));
+        for(int i=0; i<length; i++){
+            id[i] = *(start + i);
+        }
+
+        line++;
+        start = line;
+        while(*line != 0) line ++;
+        end = line;
+        length = end - start - 1;
+        content = calloc(length, sizeof(char));
+        for(int i=0; i<length; i++){
+            content[i] = *(start + i);
+        }
+
+        printf("%s %s\n", id, content);
+
+        send_request(atoi(id), ONE, content);
+
+        char message[100];
+        sprintf(message, "message send to client id#%d", atoi(id));
+        printInfo("ONE", message);
     }
 
     if(strcmp(command, "REFRESH") == 0) {
-        printf("Commencing: STOP\n");
+        printf("#Refreshing\n");
+        Request request;
+
+
+
     }
 }
 

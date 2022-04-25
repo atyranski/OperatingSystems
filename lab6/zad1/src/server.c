@@ -68,12 +68,26 @@ void action_list_clients(int sender_id){
     send_request(sender_id, LIST, response);
 }
 
-void action_send_all(int sender_id){
+void action_send_all(int sender_id, const char *content){
+    char message[100];
 
+    sprintf(message, "client id#%d requested an ALL operation with content: %s", sender_id, content);
+    printOper("ALL", message);
+
+    for(int i=0; i<MAX_CLIENTS; i++){
+        if(clients_queues[i] != sender_id && clients_queues[i] != -1) {
+            send_request(clients_queues[i], ALL, content);
+        }
+    }
 }
 
 void action_send_one(int sender_id, int recipent_id, const char *content){
+    char message[100];
 
+    sprintf(message, "client id#%d requested an ONE operation to client id#%d with content: %s", sender_id, recipent_id, content);
+    printOper("ONE", message);
+
+    send_request(recipent_id, ALL, content);
 }
 
 void action_stop(int sender_id){
@@ -116,6 +130,26 @@ void action_connect(int sender_id){
     client_amount++;
 }
 
+void action_stop_server(){
+    printf("\n");
+    printOper("STOP", "stopping work");
+
+    for(int i=0; i<MAX_CLIENTS; i++){
+        if(clients_queues[i] != -1){
+            send_request(clients_queues[i], STOP, "");
+        }
+    }
+
+    if((msgctl(server_queue, IPC_RMID, NULL)) == -1){
+        error("COULDNT_REMOVE_QUEUE", "msgctl() couldn't remove server queue");
+        printf("Errno: %s\n", strerror(errno));
+    }
+
+    printInfo("STOP", "server successfully stopped");
+
+    running = false;
+}
+
 // initializing server
 int create_server(){
     key_t key;
@@ -153,6 +187,9 @@ int initialize(){
 
 // ---- Main program
 int main(int argc, char **argv){
+    signal(SIGINT, action_stop_server);
+    atexit(action_stop_server);
+
     int init_result;
     char message[100];
 
@@ -169,7 +206,7 @@ int main(int argc, char **argv){
                     action_list_clients(request.sender_id); break;
 
                 case ALL:
-                    action_send_all(request.sender_id); break;
+                    action_send_all(request.sender_id, request.content); break;
 
                 case ONE:
                     action_send_one(request.sender_id, request.recipent_id, request.content); break;
