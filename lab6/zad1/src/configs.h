@@ -12,11 +12,13 @@
 
 // ---- Server configs
 #define MAX_CLIENTS 3
-#define QUEUE_PATH "key_file"
+#define QUEUE_PATH getenv("HOME")
 #define PROJ_ID 'S'
 #define MAX_REQUEST_SIZE 128
 #define REAL_REQUEST_SIZE sizeof(Request) - sizeof(long)
 #define EVERY_REQUEST_TYPE -7
+
+char content_buffer[MAX_REQUEST_SIZE];
 
 // ---- Client configs
 

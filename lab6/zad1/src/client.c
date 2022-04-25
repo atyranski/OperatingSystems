@@ -79,6 +79,54 @@ void action_stop(){
     running = false;
 }
 
+void action_list(){
+
+}
+
+void get_command(){
+    char *line, *start, *end, *command;
+    int length;
+    size_t len = 0;
+    ssize_t line_size = 0;
+
+    display_prompt();
+    line_size = getline(&line, &len, stdin);
+
+    start = line;
+    while(*line != 0 && *line != ' ') line++;
+    end = line;
+    length = end - start - 1;
+    command = calloc(length, sizeof(char));
+
+    for(int i=0; i<length; i++){
+        command[i] = *(start + i);
+    }
+
+    if(strcmp(command, "LIST") == 0) {
+        send_request(server_queue, LIST, "");
+
+        Request request = get_request(client_queue, LIST);
+
+        printf("%s", request.content);
+    }
+
+    if(strcmp(command, "STOP") == 0) {
+        exit(0);
+    }
+
+    if(strcmp(command, "ALL") == 0) {
+        printf("Commencing: LIST\n");
+    }
+
+    if(strcmp(command, "ONE") == 0) {
+        printf("Commencing: STOP\n");
+    }
+
+    if(strcmp(command, "REFRESH") == 0) {
+        printf("Commencing: STOP\n");
+    }
+}
+
 // initialization
 int connect_server(){
     key_t key;
@@ -130,42 +178,45 @@ void display_commands(){
     printf("LIST\t\t\t-listing currently connected clients\n");
     printf("ALL [content]\t\t-sending message with 'content' to all connected clients\n");
     printf("ONE [id] [content]\t-sending message with 'content' to client with provided 'id'\n");
-    printf("STOP\t\t\t-stopping work and disconnecting from the server\nAction:");
+    printf("STOP\t\t\t-stopping work and disconnecting from the server\n");
 }
 
 void display_prompt(){
-    printf("Action: ");
+    printf("\033[0;34mAction:\033[0m ");
 }
 
 // ---- Main program
 int main(int argc, char **argv){
     signal(SIGINT, action_stop);
+    atexit(action_stop);
 
     int init_result;
     char message[100];
 
     if((init_result = initialize()) != 0) return init_result;
 
-    while(running){
-        display_prompt();
-        Request request = get_request(server_queue, EVERY_REQUEST_TYPE);
+    while(running) get_command();
 
-        if(&(request) != NULL && running){
-            printf("sender_id: %d | recipent_id: %d | type: %d | content: %d \n", request.sender_id, request.recipent_id, request.type, request.content);
+    // while(running){
+    //     display_prompt();
+    //     Request request = get_request(server_queue, EVERY_REQUEST_TYPE);
 
-            switch(request.type){
-                case ALL:
-                    break;
+    //     if(&(request) != NULL && running){
+    //         printf("sender_id: %d | recipent_id: %d | type: %d | content: %d \n", request.sender_id, request.recipent_id, request.type, request.content);
 
-                case ONE:
-                    break;
+    //         switch(request.type){
+    //             case ALL:
+    //                 break;
 
-                default:
-                    sprintf(message, "client received a message with incorrect type from client id#%d", request.sender_id, request.recipent_id);
-                    error("INCORRECT_MESSAGE_TYPE", message);
-            }
-        }
-    }
+    //             case ONE:
+    //                 break;
+
+    //             default:
+    //                 sprintf(message, "client received a message with incorrect type from client id#%d", request.sender_id, request.recipent_id);
+    //                 error("INCORRECT_MESSAGE_TYPE", message);
+    //         }
+    //     }
+    // }
 
     return RETURN_SUCCESS;
 }

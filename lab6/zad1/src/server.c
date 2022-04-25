@@ -51,8 +51,21 @@ bool send_request(int recipent_id, Command type, const char *content){
 // server actions
 void action_list_clients(int sender_id){
     char message[100];
+
     sprintf(message, "client id#%d requested a LIST operation", sender_id);
     printOper("LIST", message);
+
+    char response[MAX_REQUEST_SIZE] = "";
+    for(int i=0; i<MAX_CLIENTS; i++){
+        if(clients_queues[i] != -1) {
+            char int_to_char[4];
+            sprintf(int_to_char, "> %d\n", clients_queues[i]);
+
+            strcat(&response, &int_to_char);
+        }
+    }
+
+    send_request(sender_id, LIST, response);
 }
 
 void action_send_all(int sender_id){
