@@ -1,0 +1,21 @@
+Eksperymenty wraz z otrzymanymi wynikami prowadza do ponizszych wnioskow:
+
+1) funkcja 'ignore'
+> proces parenta zignorowal sygnal, wiec nie byl on pending
+> proces child'a rowniez zignorowal sygnal, bo byl kopia procesu parenta
+> funkcja execl nadpisuje wywolanie programu (wywolanie przeskakuje od momentu wywolania execl do programu zdefioniowanego w execl, ale wszystkie parametry i ustawienia pozostaja niezmienione) wiec rowniez sygnal zostal zignorowany
+
+2) funkcja 'handle'
+> proces parenta przechwycil sygnal i wywolal funkcje przypisana mu jako reakcja na otrzymanie danego sygnalu
+> proces childa zrobil to samo, bo jest kopia procesu parenta
+> dla handle nie przeprowadzano testu dla execl
+
+3) funkcja 'mask'
+> proces parenta zrobil maske dla podanego, wiec byl on dalej pending
+> proces child'a ma te same ustawienia do proces parenta, wiec on rowniez mial maske dla podanego procesu, wiec byl on dalej pending
+> funkcja execl nadpisuje wywolanie programu (wywolanie przeskakuje -||- ) wiec rowniez sygnal dalej mial nalozona maske, wiec byl pending
+
+4) funkcja 'pending'
+> proces parenta mial widoczny sygnal jako pending, bo wywolal funkcje 'rise'
+> proces childa jako iz jest nowym procesem, to bez wywolania ponownie funkcji 'rise' nie mial sygnalu jako pending
+> funkcja execl nie tworzy nowego procesu, a jest ona w procesie parenta, wiec dla funkcji zewnetrznej wywolanej przez execl sygnal dalej byl pending
