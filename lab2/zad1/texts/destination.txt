@@ -1,0 +1,632 @@
+Content of copied file:
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
+Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Aenean a lorem felis.
+Aliquam erat volutpat.
+Phasellus pellentesque aliquet fringilla.
+Nulla euismod tortor nec congue fringilla.
+Nullam mattis, urna iaculis sodales bibendum,
+lorem enim hendrerit sem,
+ac mattis magna ipsum eget ex.
+Vestibulum ullamcorper vel purus et varius.
+Suspendisse molestie turpis in arcu posuere,
+nec ornare metus efficitur.
+Pellentesque habitant morbi tristique senectus et netus
+et malesuada fames ac turpis egestas.
+Fusce sit amet sollicitudin magna.
+-----------------------
+Duis vel velit a sem eleifend dictum accumsan eu lectus.
+Vestibulum egestas,
+tellus eget condimentum convallis,
+urna purus vehicula mi,
+ac venenatis urna augue vel tortor.
+Pellentesque ante nunc,
+tempor non libero vel,
+ultrices scelerisque purus.
+Aenean sapien dolor,
+semper sit amet tellus eget,
+hendrerit gravida sapien.
+In iaculis mauris vitae hendrerit volutpat.
+Nunc quis ligula lobortis,
+auctor nisl a,
+elementum diam.
+Ut tempus in lectus at venenatis.
+Mauris gravida lorem non tortor varius,
+a commodo magna dapibus.
+Mauris eleifend velit in dui pellentesque,
+eget lacinia erat dignissim.
+Fusce egestas erat accumsan,
+efficitur neque a,
+facilisis purus.
+Pellentesque posuere venenatis tincidunt.
+Integer et augue sit amet odio molestie dictum.
+Sed a metus bibendum,
+sodales tortor placerat,
+rutrum dolor.
+Aenean nec tincidunt diam.
+Nulla porta nisl eget odio faucibus sagittis.
+-----------------------
+BENVOLIO
+Good morrow, cousin.
+ROMEO
+Is the day so young?
+BENVOLIO
+But new struck nine.
+ROMEO
+Ay me, sad hours seem long.
+Was that my father that went hence so fast?
+BENVOLIO
+It was. What sadness lengthens Romeo’s hours?
+ROMEO
+Not having that which, having, makes them short.
+BENVOLIO
+In love?
+ROMEO
+Out—
+BENVOLIO
+Of love?
+ROMEO
+Out of her favor where I am in love.
+BENVOLIO
+Alas that love, so gentle in his view,
+Should be so tyrannous and rough in proof!
+ROMEO
+Alas that love, whose view is muffled still,
+Should without eyes see pathways to his will!
+Where shall we dine?—O me! What fray was here?
+Yet tell me not, for I have heard it all.
+Here’s much to do with hate, but more with love.
+Why then, O brawling love, O loving hate,
+O anything of nothing first create!
+O heavy lightness, serious vanity,
+Misshapen chaos of well-seeming forms,
+Feather of lead, bright smoke, cold fire, sick health,
+Still-waking sleep that is not what it is!
+This love feel I, that feel no love in this.
+Dost thou not laugh?
+BENVOLIO
+No, coz, I rather weep.
+ROMEO
+Good heart, at what?
+-----------------------
