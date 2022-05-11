@@ -1,0 +1,156 @@
+=================================================
+--------------------- TEST ----------------------
+=================================================
+# 'create_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'wc_files' execution time
+[Real time]: 0.010000
+[User time]: 0.030000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# Total execution time
+[Real time]: 0.010000
+[User time]: 0.030000
+[System time]: 0.000000
+-------------------------------------
+[Files counted]: 3
+[Blocks removed]: 0
+=====================================
+
+
+
+=================================================
+--------------------- TEST ----------------------
+=================================================
+# 'create_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'wc_files' execution time
+[Real time]: 0.010000
+[User time]: 0.030000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'remove_block' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# Total execution time
+[Real time]: 0.010000
+[User time]: 0.030000
+[System time]: 0.000000
+-------------------------------------
+[Files counted]: 3
+[Blocks removed]: 1
+=====================================
+
+
+
+=================================================
+--------------------- TEST ----------------------
+=================================================
+# 'create_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'wc_files' execution time
+[Real time]: 0.010000
+[User time]: 0.020000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'remove_block' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'wc_files' execution time
+[Real time]: 0.010000
+[User time]: 0.030000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'remove_block' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# Total execution time
+[Real time]: 0.010000
+[User time]: 0.050000
+[System time]: 0.000000
+-------------------------------------
+[Files counted]: 5
+[Blocks removed]: 2
+=====================================
+
+
+
+=================================================
+--------------------- TEST ----------------------
+=================================================
+# 'create_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# 'wc_files' execution time
+[Real time]: 0.010000
+[User time]: 0.280000
+[System time]: 0.010000
+-------------------------------------
+# 'print_table' execution time
+[Real time]: 0.010000
+[User time]: 0.000000
+[System time]: 0.000000
+-------------------------------------
+# Total execution time
+[Real time]: 0.010000
+[User time]: 0.280000
+[System time]: 0.010000
+-------------------------------------
+[Files counted]: 10
+[Blocks removed]: 0
+=====================================
+
+
+
