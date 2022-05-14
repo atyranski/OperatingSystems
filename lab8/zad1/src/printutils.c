@@ -40,38 +40,3 @@ void printPrompt(char* type, char* message){
     printf("[%s] %s: ", type, message);
     printf("\033[0m");
 }
-
-void printPrepare(pid_t pid, int n){
-    printf("\033[0;34m");
-    printf("[cook #%d] ", pid);
-    printf("\033[0m");
-    printf("Przygotowuje pizze: %d\n", n);
-}
-
-void printBake(pid_t pid, int n, int m){
-    printf("\033[0;34m");
-    printf("[cook #%d] ", pid);
-    printf("\033[0m");
-    printf("Dodałem pizze: %d. Liczba pizz w piecu: %d\n", n, m);
-}
-
-void printPullOut(pid_t pid, int n, int m, int k){
-    printf("\033[0;34m");
-    printf("[cook #%d] ", pid);
-    printf("\033[0m");
-    printf("Wyjmuję pizze: %d. Liczba pizz w piecu: %d. Liczba pizz na stole: %d\n", n, m, k);
-}
-
-void printPickUp(pid_t pid, int n, int k){
-    printf("\033[0;34m");
-    printf("[deliverer #%d] ", pid);
-    printf("\033[0m");
-    printf("Pobieram pizze: %d. Liczba pizz na stole: %d\n", n, k);
-}
-
-void printDeliver(pid_t pid, int n){
-    printf("\033[0;34m");
-    printf("[deliverer #%d] ", pid);
-    printf("\033[0m");
-    printf("Dostarczam pizze: %d\n", n);
-}

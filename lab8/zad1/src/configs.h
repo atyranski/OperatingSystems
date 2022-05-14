@@ -7,20 +7,41 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include "printutils.h"
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
 #define RETURN_INCORRECT_ARGUMENTS -1
 
+// according to https://people.sc.fsu.edu/~jburkardt/data/pgma/pgma.html
+// every line should be no longer than 70 chars, so if every color can be
+// possibly 3chars long (100-255), so the safe amount of columns is 17
+// 17 * 4 (3chars + whitespace) = 67
+#define COLS_IN_FILE 17 
+
 typedef struct{
     int width;
     int height;
+    int amount;
     unsigned char maxColor;
     unsigned char *colors;
 } Image;
+
+typedef struct{
+    int x_start;
+    int x_end;
+    int y_start;
+    int y_end;
+} Area;
+
+typedef struct{
+    int id;
+    Area *area;
+} Thread;
 
 #endif

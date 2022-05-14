@@ -17,13 +17,4 @@ void printOper(char* type, char* message);
 
 void printPrompt(char* type, char* message);
 
-void printPrepare(pid_t pid, int n);
-
-void printBake(pid_t pid, int n, int m);
-
-void printPullOut(pid_t pid, int n, int m, int k);
-
-void printPickUp(pid_t pid, int n, int k);
-
-void printDeliver(pid_t pid, int n);
 #endif
