@@ -1,11 +1,4 @@
 #include "printutils.h"
-#include <stdio.h>
-#include <sys/times.h>
-#include <unistd.h>
-#include <time.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 // ---- Return codes
 #define RETURN_CODE_SUCCESS 0
@@ -39,4 +32,8 @@ void printPrompt(char* type, char* message){
     printf("\033[0;34m");
     printf("[%s] %s: ", type, message);
     printf("\033[0m");
+}
+
+void printTime(int id, double *time){
+    printf("\tThread #%d: %lfms\n", id, time);
 }

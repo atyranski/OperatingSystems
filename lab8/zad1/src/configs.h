@@ -3,15 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/stat.h>
 #include <string.h>
-#include <signal.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <time.h>
 #include "printutils.h"
 
 // ---- Return codes

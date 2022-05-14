@@ -7,6 +7,10 @@ const char *img_output;
 Image *image;
 pthread_t *threads;
 
+double getTimeElapsed(struct timespec *start, struct timespec *end){
+    return ((end->tv_sec - start->tv_sec) * 10e6 + (end->tv_nsec - start->tv_nsec) / 10e3) / 10e2;
+}
+
 int getAreaStart(int k, int N, int m){
     return k * ceil(N/m);
 }
@@ -18,13 +22,20 @@ int getAreaEnd(int k, int N, int m){
 void *thread_operations(void *args){
     Thread *thread = args;
     char message[100];
+    double *time_result = calloc(1, sizeof(time_result));
 
     sprintf(message, "thread #%d starting work", thread->id);
     printOper("START", message);
 
     Area *area = thread->area;
 
-    printf("%d %d %d %d\n", area->y_start, area->y_end, area->x_start, area->x_end);
+    // printf("%d %d %d %d\n", area->y_start, area->y_end, area->x_start, area->x_end);
+
+    struct timespec start, end;
+    if(clock_gettime(CLOCK_REALTIME, &start) < 0){
+        error("COULDNT_GET_TIME", "program occured problemy with getting time from timespec");
+        exit(1);
+    }
 
     for(int row=area->y_start; row<area->y_end; row++){
         for(int col=area->x_start; col<area->x_end; col++){
@@ -40,12 +51,24 @@ void *thread_operations(void *args){
         }
     }
 
+    // sleep(1);
+
+    if(clock_gettime(CLOCK_REALTIME, &end) == -1){
+        error("COULDNT_GET_TIME", "program occured problemy with getting time from timespec");
+        exit(1);
+    }
+
     sprintf(message, "thread #%d ended work", thread->id);
     printOper("END", message);
 
     free(thread);
 
-    return RETURN_SUCCESS;
+    *time_result = getTimeElapsed(&start, &end);
+
+    // printf("Total time elapsed:\t%lfms\n", *time_result);
+
+    // return (void *) time_result;
+    pthread_exit(time_result);
 }
 
 pthread_t createThread(int i, const char *mode){
@@ -168,6 +191,9 @@ int main(int argc, char **argv){
     mode = argv[2];
     img_input = argv[3];
     img_output = argv[4];
+    double *time_results = calloc(thread_amount, sizeof(double));
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
 
     // Loading image
     image = getImage(img_input);
@@ -181,15 +207,28 @@ int main(int argc, char **argv){
     }
 
     for(int i=0; i<thread_amount; i++){
-        int result;
+        double *result;
 
         pthread_join(threads[i], (void **) &result);
+        time_results[i] = *result;
+
+        // printf("Thread#%d time:\t%lfms\n", i, time_results[i]);
+
+    }
+
+    clock_gettime(CLOCK_REALTIME, &end);
+
+    printf("\n\n============ SUMMARY =============\n");
+    printf("Total time elapsed:\t%lfms\n", getTimeElapsed(&start, &end));
+    for(int i=0; i<thread_amount; i++){
+        printf("\t[#%d]\t%lfms\n", i, time_results[i]);
     }
 
     saveImage(img_output);
 
     free(image);
     free(threads);
+    free(time_results);
 
     return RETURN_SUCCESS;
 }

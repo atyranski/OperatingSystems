@@ -1,0 +1,58 @@
+Image: img/barbara.ascii.pgm
+Size: 512x512
+Mode: blocks
+
+______________________________
+Threads = 1
+Total time elapsed:	2.441216ms
+	[#0]	0.082657ms
+______________________________
+Threads = 2
+Total time elapsed:	2.321775ms
+	[#0]	0.039873ms
+	[#1]	0.038927ms
+______________________________
+Threads = 4
+Total time elapsed:	1.881039ms
+	[#0]	0.022367ms
+	[#1]	0.022345ms
+	[#2]	0.022738ms
+	[#3]	0.022380ms
+______________________________
+Threads = 8
+Total time elapsed:	2.268571ms
+	[#0]	0.014040ms
+	[#1]	0.013994ms
+	[#2]	0.016125ms
+	[#3]	0.011331ms
+	[#4]	0.014746ms
+	[#5]	0.013678ms
+	[#6]	0.015104ms
+	[#7]	0.010838ms
+______________________________
+Threads = 16
+Total time elapsed:	2.482100ms
+	[#0]	0.009274ms
+	[#1]	0.009863ms
+	[#2]	0.005028ms
+	[#3]	0.005389ms
+	[#4]	0.005229ms
+	[#5]	0.008852ms
+	[#6]	0.005012ms
+	[#7]	0.006800ms
+	[#8]	0.004848ms
+	[#9]	0.005192ms
+	[#10]	0.004877ms
+	[#11]	0.005174ms
+	[#12]	0.005847ms
+	[#13]	0.005085ms
+	[#14]	0.004855ms
+	[#15]	0.005177ms
+______________________________
+
+Wnioski: Jak mozna zauwazyc w kazdym przypadku
+wiekszosc czasu wykonywania programu zajmuje
+samo tworzenie watkow, niz operacje, ktore one
+wykonuja, co pokazuje, ze rozbicie pracy
+na kilka watkow wcale nie przyspieszylo wykonania 
+programu w przypadku tak malych obrazow.

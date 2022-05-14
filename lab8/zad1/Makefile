@@ -9,7 +9,7 @@ LIB_PATH = src/printutils.c
 MAIN_PATH = src/main.c
 
 # --- Iput values
-THREADS = 10
+THREADS = 16
 MODE = blocks
 IMAGE_INPUT_PATH = img/barbara.ascii.pgm
 IMAGE_OUTPUT_PATH = img/negative.ascii.pgm
