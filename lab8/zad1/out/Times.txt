@@ -49,12 +49,12 @@ Total time elapsed:	2.482100ms
 	[#14]	0.004855ms
 	[#15]	0.005177ms
 ______________________________
-Wnioski: Jak mozna zauwazyc w kazdym przypadku
-wiekszosc czasu wykonywania programu zajmuje
-samo tworzenie watkow, niz operacje, ktore one
-wykonuja, co pokazuje, ze rozbicie pracy
-na kilka watkow wcale nie przyspieszylo wykonania 
-programu w przypadku tak malych obrazow.
+Wnioski: Jak można zauważyć w każdym przypadku
+większość czasu wykonywania programu zajmuje
+samo tworzenie wątków, a nie operacje, które one
+wykonują, co pokazuje, że rozbicie pracy
+na kilka wątków wcale nie przyspieszyło wykonania 
+programu w przypadku tak małych obrazów.
 
 ------------------------------
 Image: img/barbara.ascii.pgm
@@ -108,13 +108,13 @@ Total time elapsed:	9.566479ms
 	[#14]	0.131189ms
 	[#15]	0.135742ms
 ______________________________
-Wnioski: Jak mozna zauwazyc juz od 8 watkow 
-roznica w czasie jest bardzo wyrazna ale nie wynika
-ona z faktu tworzenia watkow, bo w obu wariantach sa
-tworzone w ten sam sposob, ale przez to, ze
-przy metodzie 'numbers' kazdy watek musi przeiterowac
-po calej plaszczyznie i sprawdzac, czy dany punkt (x,y)
-ma wartosc, za ktora on jest odpowiedzialny sprawia, ze
-czas wykonania na kazdym watku wyraznie skacze w porownaniu
-do dowolnego watku obliczajacego jedynie wyznaczony na sztywno
+Wnioski: Jak można zauważyć już od 8 wątków 
+różnica w czasie jest bardzo wyraźna, ale nie wynika
+ona z faktu tworzenia wątków, bo w obu wariantach są
+tworzone w ten sam sposób, ale przez to, że
+przy metodzie 'numbers' każdy wątek musi przeiterować
+po calej płaszczyźnie i sprawdzać, czy dany punkt (x,y)
+ma wartość, za która jest on odpowiedzialny sprawia, że
+czas wykonania na każdym wątku wyraźnie skacze w porównaniu
+do dowolnego wątku obliczającego jedynie wyznaczony na sztywno
 pasek.
