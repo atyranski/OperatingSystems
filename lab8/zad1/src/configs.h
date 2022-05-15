@@ -37,6 +37,12 @@ typedef struct{
 typedef struct{
     int id;
     Area *area;
-} Thread;
+} Thread_blocks;
+
+typedef struct{
+    int id;
+    int range_from;
+    int range_to;
+} Thread_numbers;
 
 #endif

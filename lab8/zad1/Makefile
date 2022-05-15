@@ -10,7 +10,8 @@ MAIN_PATH = src/main.c
 
 # --- Iput values
 THREADS = 16
-MODE = blocks
+MODE_BLOCKS = blocks
+MODE_NUMBERS = numbers
 IMAGE_INPUT_PATH = img/barbara.ascii.pgm
 IMAGE_OUTPUT_PATH = img/negative.ascii.pgm
 
@@ -32,4 +33,4 @@ clean:
 
 run:
 	clear
-	./bin/main $(THREADS) $(MODE) $(IMAGE_INPUT_PATH) $(IMAGE_OUTPUT_PATH)
+	./bin/main $(THREADS) $(MODE_NUMBERS) $(IMAGE_INPUT_PATH) $(IMAGE_OUTPUT_PATH)

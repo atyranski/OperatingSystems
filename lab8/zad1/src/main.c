@@ -6,6 +6,7 @@ const char *img_input;
 const char *img_output; 
 Image *image;
 pthread_t *threads;
+int *border_values;
 
 double getTimeElapsed(struct timespec *start, struct timespec *end){
     return ((end->tv_sec - start->tv_sec) * 10e6 + (end->tv_nsec - start->tv_nsec) / 10e3) / 10e2;
@@ -19,8 +20,86 @@ int getAreaEnd(int k, int N, int m){
     return (k+1) * ceil(N/m);
 }
 
-void *thread_operations(void *args){
-    Thread *thread = args;
+void calculateOccurances(int *occurances){
+    for(int i=0; i<image->amount; i++){
+        occurances[image->colors[i]]++;
+    }
+}
+
+void calculateBorderValues(){
+    int *occurances = calloc(image->maxColor + 1, sizeof(int));
+    border_values = calloc(thread_amount, sizeof(int));
+
+    int points_per_thread = image->amount / thread_amount;
+    printf("expected points per thread: %d\n", points_per_thread); 
+    calculateOccurances(occurances);
+
+
+    int value = 0;
+    int index = 0;
+    for(int i=0; i<thread_amount; i++){
+        while(value < (i+1) * points_per_thread && index < image->maxColor + 1){
+            index++;
+            value += occurances[index];
+        }
+        border_values[i] = index;
+    }
+
+    for(int i=0; i<thread_amount; i++){
+        printf("thread #%d is responsible for range to: %d\n", i, border_values[i]);
+    }
+
+    free(occurances);
+}
+
+bool isValueBetween(int x, int left, int right){
+    if(x >= left && x <= right) return true;
+    else false;
+}
+
+void *numbers_operations(void *args){
+    Thread_numbers *thread = args;
+    char message[100];
+    double *time_result = calloc(1, sizeof(time_result));
+
+    sprintf(message, "thread #%d starting work", thread->id);
+    printOper("START", message);
+
+    struct timespec start, end;
+    if(clock_gettime(CLOCK_REALTIME, &start) < 0){
+        error("COULDNT_GET_TIME", "program occured problemy with getting time from timespec");
+        exit(1);
+    }
+
+    for(int row=0; row<image->height; row++){
+        for(int col=0; col<image->width; col++){
+            int position = row * image->width + col;
+
+            if(isValueBetween(
+                image->colors[position],
+                thread->range_from,
+                thread->range_to)
+            ) image->colors[position] = image->maxColor - image->colors[position];
+        }
+    }
+
+    if(clock_gettime(CLOCK_REALTIME, &end) == -1){
+        error("COULDNT_GET_TIME", "program occured problemy with getting time from timespec");
+        exit(1);
+    }
+
+    sprintf(message, "thread #%d ended work", thread->id);
+    printOper("END", message);
+
+    free(thread);
+
+    *time_result = getTimeElapsed(&start, &end);
+
+    pthread_exit(time_result);
+}
+
+void *blocks_operations(void *args){
+    Thread_blocks *thread = args;
     char message[100];
     double *time_result = calloc(1, sizeof(time_result));
 
@@ -28,8 +107,6 @@ void *thread_operations(void *args){
     printOper("START", message);
 
     Area *area = thread->area;
-
-    // printf("%d %d %d %d\n", area->y_start, area->y_end, area->x_start, area->x_end);
 
     struct timespec start, end;
     if(clock_gettime(CLOCK_REALTIME, &start) < 0){
@@ -40,12 +117,6 @@ void *thread_operations(void *args){
     for(int row=area->y_start; row<area->y_end; row++){
         for(int col=area->x_start; col<area->x_end; col++){
             int position = row * image->width + col;
-            // printf("%d\n", position);
-
-            // printf("thread#%d:\tfrom: %d\tto:%d\n",
-            //     thread->id,
-            //     image->colors[position],
-            //     image->maxColor - image->colors[position]);
 
             image->colors[position] = image->maxColor - image->colors[position];
         }
@@ -65,25 +136,36 @@ void *thread_operations(void *args){
 
     *time_result = getTimeElapsed(&start, &end);
 
-    // printf("Total time elapsed:\t%lfms\n", *time_result);
-
-    // return (void *) time_result;
     pthread_exit(time_result);
 }
 
 pthread_t createThread(int i, const char *mode){
     pthread_t thread_id;
-    Thread *thread = calloc(1, sizeof(Thread));
-    
-    thread->id = i;
 
     if(strcmp("numbers", mode) == 0){
-        // place for spliting colors for number's mode
+        Thread_numbers *thread = calloc(1, sizeof(Thread_numbers));
+        thread->id = i;
+
+        if(i == 0){
+            thread->range_from = 0;
+            thread->range_to = border_values[i];
+        } else {
+            thread->range_from= border_values[i-1] + 1;
+            thread->range_to = border_values[i];
+        }
+
+        if(pthread_create(&thread_id, NULL, numbers_operations, thread) != 0){
+            error("INCORRECT_ARGUMENTS", "[threads-amount] [mode] [image-input-path] [image-output-file]");
+            exit(1);
+        }
+
     }
 
     if(strcmp("blocks", mode) == 0){
         int x_end;
         int x_start = getAreaStart(i, image->width, thread_amount);
+        Thread_blocks *thread = calloc(1, sizeof(Thread_blocks));
+        thread->id = i;
 
         if(i == thread_amount -1 ) x_end = image->width;
         else x_end = getAreaEnd(i, image->width, thread_amount);
@@ -98,11 +180,11 @@ pthread_t createThread(int i, const char *mode){
             thread->id,
             thread->area->x_start ,
             thread->area->x_end);
-    }
 
-    if(pthread_create(&thread_id, NULL, thread_operations, thread) != 0){
-        error("INCORRECT_ARGUMENTS", "[threads-amount] [mode] [image-input-path] [image-output-file]");
-        exit(1);
+        if(pthread_create(&thread_id, NULL, blocks_operations, thread) != 0){
+            error("INCORRECT_ARGUMENTS", "[threads-amount] [mode] [image-input-path] [image-output-file]");
+            exit(1);
+        }
     }
 
     return thread_id;
@@ -191,41 +273,46 @@ int main(int argc, char **argv){
     mode = argv[2];
     img_input = argv[3];
     img_output = argv[4];
+    threads = calloc(thread_amount, sizeof(pthread_t));
     double *time_results = calloc(thread_amount, sizeof(double));
+    
+    // getting ending time of all operations
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
 
     // Loading image
     image = getImage(img_input);
 
-    threads = calloc(thread_amount, sizeof(pthread_t));
-
     printInfo("INITIALIZATION", "threads are splitted among these areas");
 
-    for(int i=0; i<thread_amount; i++){
-        threads[i] = createThread(i, mode);
-    }
+    // if mode is 'numbers' we need to split range of all points into almost
+    // even ranges
+    if(strcmp("numbers", mode) == 0) calculateBorderValues();
 
+    // createing threads
+    for(int i=0; i<thread_amount; i++) threads[i] = createThread(i, mode);
+
+    // waiting for all threads to end
     for(int i=0; i<thread_amount; i++){
         double *result;
 
         pthread_join(threads[i], (void **) &result);
         time_results[i] = *result;
-
-        // printf("Thread#%d time:\t%lfms\n", i, time_results[i]);
-
     }
 
+    // getting ending time of all operations
     clock_gettime(CLOCK_REALTIME, &end);
 
+    // printing summary of time results
     printf("\n\n============ SUMMARY =============\n");
     printf("Total time elapsed:\t%lfms\n", getTimeElapsed(&start, &end));
-    for(int i=0; i<thread_amount; i++){
-        printf("\t[#%d]\t%lfms\n", i, time_results[i]);
-    }
+    for(int i=0; i<thread_amount; i++) printf("\t[#%d]\t%lfms\n", i, time_results[i]);
 
+    // saving object Image to file
     saveImage(img_output);
 
+    // free memory 
+    if(strcmp("numbers", mode) == 0) free(border_values);
     free(image);
     free(threads);
     free(time_results);

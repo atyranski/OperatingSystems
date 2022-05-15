@@ -49,10 +49,72 @@ Total time elapsed:	2.482100ms
 	[#14]	0.004855ms
 	[#15]	0.005177ms
 ______________________________
-
 Wnioski: Jak mozna zauwazyc w kazdym przypadku
 wiekszosc czasu wykonywania programu zajmuje
 samo tworzenie watkow, niz operacje, ktore one
 wykonuja, co pokazuje, ze rozbicie pracy
 na kilka watkow wcale nie przyspieszylo wykonania 
 programu w przypadku tak malych obrazow.
+
+------------------------------
+Image: img/barbara.ascii.pgm
+Size: 512x512
+Mode: numbers
+
+______________________________
+Threads = 1
+Total time elapsed:	2.546122ms
+	[#0]	0.122330ms
+______________________________
+Threads = 2
+Total time elapsed:	2.187045ms
+	[#0]	0.145307ms
+	[#1]	0.145309ms
+______________________________
+Threads = 4
+Total time elapsed:	2.932448ms
+	[#0]	0.144876ms
+	[#1]	0.152666ms
+	[#2]	0.169872ms
+	[#3]	0.342944ms
+______________________________
+Threads = 8
+Total time elapsed:	6.688442ms
+	[#0]	0.123280ms
+	[#1]	0.151175ms
+	[#2]	0.164781ms
+	[#3]	0.157407ms
+	[#4]	0.293240ms
+	[#5]	0.159777ms
+	[#6]	1.515202ms
+	[#7]	0.128299ms
+______________________________
+Threads = 16
+Total time elapsed:	9.566479ms
+	[#0]	0.121816ms
+	[#1]	0.141862ms
+	[#2]	0.141815ms
+	[#3]	0.150830ms
+	[#4]	0.139820ms
+	[#5]	0.143933ms
+	[#6]	0.160216ms
+	[#7]	0.154814ms
+	[#8]	0.153685ms
+	[#9]	0.157933ms
+	[#10]	0.156159ms
+	[#11]	0.162487ms
+	[#12]	0.145505ms
+	[#13]	0.141995ms
+	[#14]	0.131189ms
+	[#15]	0.135742ms
+______________________________
+Wnioski: Jak mozna zauwazyc juz od 8 watkow 
+roznica w czasie jest bardzo wyrazna ale nie wynika
+ona z faktu tworzenia watkow, bo w obu wariantach sa
+tworzone w ten sam sposob, ale przez to, ze
+przy metodzie 'numbers' kazdy watek musi przeiterowac
+po calej plaszczyznie i sprawdzac, czy dany punkt (x,y)
+ma wartosc, za ktora on jest odpowiedzialny sprawia, ze
+czas wykonania na kazdym watku wyraznie skacze w porownaniu
+do dowolnego watku obliczajacego jedynie wyznaczony na sztywno
+pasek.
