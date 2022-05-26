@@ -9,7 +9,7 @@ LIB_PATH = src/printutils.c
 MAIN_PATH = src/main.c
 
 # --- Iput values
-THREADS = 5
+ELVES = 10
 
 recompile: clean compile_lib compile_main run
 
@@ -29,4 +29,4 @@ clean:
 
 run:
 	clear
-	./bin/main $(THREADS)
+	./bin/main $(ELVES)

@@ -9,15 +9,15 @@ int elves_in_workshop_amount = 0;
 pthread_cond_t condition_santa = PTHREAD_COND_INITIALIZER;
 pthread_cond_t condition_elves = PTHREAD_COND_INITIALIZER;
 
-pthread_mutex_t access = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_access = PTHREAD_MUTEX_INITIALIZER;
 
-int getDelayTime(int time, int difference){
-    return (time + (rand() % difference)) * difference;
+int getDelayTime(int min_time, int difference){
+    srand(time(NULL));
+    return (min_time + (rand() % difference)) * difference;
 }
 
 void *elves_actions(void *args){
     Arguments *arguments = args;
-    srand(time(NULL));
 
     printOper("ELF", "starting thread");
 
@@ -25,24 +25,26 @@ void *elves_actions(void *args){
         int time_working = getDelayTime(TIME_WORKING, DIFFERENCE_WORKING);
         char message[1000];
 
-        pthread_mutex_lock(arguments->access);
+        usleep(time_working);
 
-        while(arguments->elves_in_workshop_amount >= MAX_ELVES_WORKING){
+        pthread_mutex_lock(arguments->mutex_access);
+
+        while(*(arguments->elves_in_workshop_amount) >= MAX_ELVES_WORKING){
 
             sprintf(message, "czeka na powrót elfów %d", arguments->id);
             printOper("ELF", message);
 
-            pthread_cond_wait(arguments->condition_elves, arguments->access);
+            pthread_cond_wait(arguments->condition_elves, arguments->mutex_access);
         }
 
         arguments->elves_in_workshop[*(arguments->elves_in_workshop_amount)] = arguments->id;
-        arguments->elves_in_workshop_amount++;
+        (*arguments->elves_in_workshop_amount)++;
 
         strcpy(message, "");
-        sprintf(message, "czeka %d elfów na Mikołaja, %d", arguments->elves_in_workshop_amount, arguments->id);
+        sprintf(message, "czeka %d elfów na Mikołaja, %d", *arguments->elves_in_workshop_amount, arguments->id);
         printOper("ELF", message);
 
-        if(arguments->elves_in_workshop_amount >= MAX_ELVES_WORKING){
+        if(*(arguments->elves_in_workshop_amount) >= MAX_ELVES_WORKING){
             strcpy(message, "");
             sprintf(message, "wybudzam Mikołaja, %d", arguments->id);
             printOper("ELF", message);
@@ -50,31 +52,30 @@ void *elves_actions(void *args){
             pthread_cond_broadcast(arguments->condition_santa);
         }
 
-        pthread_cond_wait(arguments->condition_elves, arguments->access);
+        pthread_cond_wait(arguments->condition_elves, arguments->mutex_access);
 
         strcpy(message, "");
         sprintf(message, "Mikołaj rozwiązuje problem %d", arguments->id);
         printOper("ELF", message);
 
-        pthread_mutex_unlock(arguments->access);
+        pthread_mutex_unlock(arguments->mutex_access);
     }
 }
 
 void *santa_actions(void *args){
     Arguments *arguments = args;
-    srand(time(NULL));
 
     printInfo("SANTA", "starting thread");
 
     while(true){
-        while(arguments->elves_in_workshop_amount < MAX_ELVES_WORKING){
-            pthread_cond_wait(arguments->condition_santa, arguments->access);
+        while(*(arguments->elves_in_workshop_amount) < MAX_ELVES_WORKING){
+            pthread_cond_wait(arguments->condition_santa, arguments->mutex_access);
         }
 
         printInfo("SANTA", "budzę się");
         int time_sleeping = getDelayTime(TIME_SLEEPING, DIFFERENCE_SLEEPING);
 
-        if(arguments->elves_in_workshop_amount >= MAX_ELVES_WORKING){
+        if(*(arguments->elves_in_workshop_amount) >= MAX_ELVES_WORKING){
             char message[100];
             int time_solving = getDelayTime(TIME_SOLVING, DIFFERENCE_SOLVING);
 
@@ -86,7 +87,7 @@ void *santa_actions(void *args){
 
             usleep(time_solving);
 
-            arguments->elves_in_workshop_amount = 0;
+            *arguments->elves_in_workshop_amount = 0;
 
             pthread_cond_broadcast(arguments->condition_elves);
         }
@@ -97,22 +98,31 @@ void *santa_actions(void *args){
     }
 }
 
-pthread_t createElfThread(int id){
+pthread_t createThread(int id, bool isSanta){
     pthread_t thread;
 
     Arguments *arguments = calloc(1, sizeof(Arguments));
     arguments->id = id;
     arguments->elves_amount = elves_amount;
     arguments->elves_in_workshop = elves_in_workshop;
-    arguments->elves_in_workshop_amount = elves_in_workshop_amount;
+    arguments->elves_in_workshop_amount = &elves_in_workshop_amount;
     arguments->condition_santa = &condition_santa;
     arguments->condition_elves = &condition_elves;
-    arguments->access = &access;
+    arguments->mutex_access = &mutex_access;
 
-    if(pthread_create(&thread, NULL, elves_actions, arguments) != 0){
-        error("COULDNT_CREATE_THREAD", "program occured problem with creating new thread for elf");
-        return RETURN_COULDNT_CREATE_THREAD;
+
+    if(isSanta){
+        if(pthread_create(&thread, NULL, santa_actions, arguments) != 0){
+            error("COULDNT_CREATE_THREAD", "program occured problem with creating new thread for elf");
+            return RETURN_COULDNT_CREATE_THREAD;
+        }
+    } else {
+        if(pthread_create(&thread, NULL, elves_actions, arguments) != 0){
+            error("COULDNT_CREATE_THREAD", "program occured problem with creating new thread for elf");
+            return RETURN_COULDNT_CREATE_THREAD;
+        }
     }
+
 
     return thread;
 }
@@ -133,14 +143,14 @@ int main(int argc, char **argv){
 
     // Creating elves
     for (int i = 0; i < elves_amount; ++i){
-        elves_threads[i] = createElfThread(i);
+        elves_threads[i] = createThread(i, false);
     }
 
     // Waiting for all threads (elves) to finish their job
-    pthread_join(create_thread(0, santa_actions), NULL);
+    pthread_join(createThread(-1, true), NULL);
 
     // Stopping elves threads
-    for (int i = 0; i < elves_amount; ++i) {
+    for (int i = 0; i < elves_amount; i++) {
         pthread_cancel(elves_threads[i]);
     }
 

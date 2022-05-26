@@ -1,12 +1,10 @@
 #ifndef CONFIGS_H
 #define CONFIGS_H
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
 #include <stdbool.h>
-#include <time.h>
 #include "printutils.h"
 
 // ---- Return codes
@@ -34,7 +32,7 @@ typedef struct{
     pthread_cond_t *condition_shutdown;
     pthread_cond_t *condition_santa;
     pthread_cond_t *condition_elves;
-    pthread_mutex_t * access;
+    pthread_mutex_t *mutex_access;
 } Arguments;
 
 #endif
