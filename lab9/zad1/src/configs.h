@@ -15,24 +15,17 @@
 #define RETURN_COULDNT_CREATE_THREAD -3
 
 // that will assure, that no more than 3 elves is waiting for santa
-#define MAX_ELVES_WORKING 3 
-
-#define TIME_SOLVING 1000
-#define DIFFERENCE_SOLVING 1000
-#define TIME_SLEEPING 1000
-#define DIFFERENCE_SLEEPING 1000
-#define TIME_WORKING 2000
-#define DIFFERENCE_WORKING 3000
+#define MAX_ELVES_COMPLAINING 3 
 
 typedef struct{
     int id;
-    int elves_amount;
-    int *elves_in_workshop;
-    int *elves_in_workshop_amount;
+    int *elves_complaining;
+    int *elves_complaining_amount;
 
-    pthread_cond_t *condition_shutdown;
     pthread_cond_t *condition_santa;
     pthread_cond_t *condition_elves;
+    pthread_cond_t *condition_solved;
+
     pthread_mutex_t *mutex_access;
 } Arguments;
 
