@@ -11,9 +11,14 @@ pthread_cond_t condition_elves = PTHREAD_COND_INITIALIZER;
 
 pthread_mutex_t mutex_access = PTHREAD_MUTEX_INITIALIZER;
 
-int getDelayTime(int min_time, int difference){
+
+double randomGenerator(){
     srand(time(NULL));
-    return (min_time + (rand() % difference)) * difference;
+    return (double) rand() / (double) RAND_MAX;
+}
+
+int getDelayTime(int min, int max){
+    return (randomGenerator() * (max - min) + min) * 1000;
 }
 
 void *elves_actions(void *args){
@@ -22,8 +27,11 @@ void *elves_actions(void *args){
     printOper("ELF", "starting thread");
 
     while(true){
-        int time_working = getDelayTime(TIME_WORKING, DIFFERENCE_WORKING);
+        int time_working = getDelayTime(2000, 5000);
+        int time_solving = getDelayTime(1000, 2000);
         char message[1000];
+
+        printf("WORKING: %d\n", time_working);
 
         usleep(time_working);
 
@@ -58,6 +66,8 @@ void *elves_actions(void *args){
         sprintf(message, "Mikołaj rozwiązuje problem %d", arguments->id);
         printOper("ELF", message);
 
+        usleep(time_solving);
+
         pthread_mutex_unlock(arguments->mutex_access);
     }
 }
@@ -73,11 +83,11 @@ void *santa_actions(void *args){
         }
 
         printInfo("SANTA", "budzę się");
-        int time_sleeping = getDelayTime(TIME_SLEEPING, DIFFERENCE_SLEEPING);
+        int time_sleeping = getDelayTime(2000, 3000);
+        int time_solving = getDelayTime(1000, 2000);
 
         if(*(arguments->elves_in_workshop_amount) >= MAX_ELVES_WORKING){
             char message[100];
-            int time_solving = getDelayTime(TIME_SOLVING, DIFFERENCE_SOLVING);
 
             sprintf(message, "rozwiązuje problemy elfów %d %d %d", arguments->elves_in_workshop[0],
             arguments->elves_in_workshop[1],
@@ -147,7 +157,7 @@ int main(int argc, char **argv){
     }
 
     // Waiting for all threads (elves) to finish their job
-    pthread_join(createThread(-1, true), NULL);
+    pthread_join(createThread(10, true), NULL);
 
     // Stopping elves threads
     for (int i = 0; i < elves_amount; i++) {

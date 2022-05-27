@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include "printutils.h"
