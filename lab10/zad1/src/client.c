@@ -1,39 +1,41 @@
 #include "configs.h"
 
 Client *client;
+ConnectionType connection;
+int port;
+char *socket_path;
+
+ConnectionType getConnectionType(const char *type){
+    if(strcmp("local", type) == 0) return CONN_LOCAL;
+    if(strcmp("online", type) == 0) return CONN_ONLINE;
+    
+    return CONN_NONE;
+}
 
 // ---- Main program
 int main(int argc, char **argv){
 
-    int descriptor;
-
-    if((descriptor = socket(AF_INET, SOCK_DGRAM, 0)) == -1){
-        error("SOCKET_ERROR", "cannot make a socket");
+    // Validation of arguments
+    if(argc != 3){
+        error("INCORRECT_ARGUMENTS", "./bin/main <nickname(16)> ('local' | 'online') (<socket path> | <port>)");
         exit(1);
     }
 
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htobe16(33333);
-    addr.sin_addr.s_addr = htobe32(INADDR_LOOPBACK);
+    strcpy(client->nick, argv[1]);
+    connection = getConnectionType(argv[2]);
 
-    if(connect(descriptor, (struct sockaddr *) &addr, sizeof(struct sockaddr)) == -1){
-        error("CONNECT_ERROR", "cannot connect to addres");
+    if(connection == CONN_NONE){
+        error("INCORRECT_CONNECTION_TYPE", "provide 'local' or 'online' as a connection type");
         exit(1);
     }
+    
+    client->connection = connection;
 
-    client = calloc(1, sizeof(Client));
-
-    printf("Enter nickname: ");
-    scanf("%s", &(client->nick));
-
-    if(write(descriptor, &client->nick, sizeof(Client)) == -1){
-        error("WRITE_ERROR", "cannot write to socket");
-        exit(1);
+    if(connection == CONN_LOCAL){
+        strcpy(socket_path, argv[3]);
+    } else {
+        port = atoi(argv[3]);
     }
-
-    shutdown(descriptor, SHUT_RDWR);
-    close(descriptor);
 
     return RETURN_SUCCESS;
 }

@@ -13,21 +13,38 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#include <fcntl.h>
+#include <pthread.h>
 #include "printutils.h"
 
 #define UNIX_PATH_MAX 108
 #define MAX_CLIENTS_REGISTERED 4
 #define CLIENT_NICK_LENGTH 16
-#define MAX_REQUEST_SIZE 256
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
 #define RETURN_INCORRECT_ARGUMENTS -1
 
+typedef enum RequestType{
+    REQ_REGISTER,
+    REQ_MOVE,
+    REQ_QUIT,
+    REQ_CHECK,
+} RequestType;
+
+typedef enum ConnectionType{
+    CONN_LOCAL,
+    CONN_ONLINE,
+    CONN_NONE
+} ConnectionType;
+
 typedef struct{
     int id;
+    int descriptor;
     char nick[CLIENT_NICK_LENGTH];
     char symbol;
+    ConnectionType connection;
+    struct sockaddr address;
 } Client;
 
 typedef struct{
@@ -38,14 +55,10 @@ typedef struct{
 typedef struct{
     int online;
     int local;
-    int epoll;
+    Client **clients;
+    int clients_amount;
+    Game **games;
+    int games_amount;
 } Server;
-
-typedef enum RequestType{
-    REQ_REGISTER,
-    REQ_MOVE,
-    REQ_QUIT,
-    REQ_CHECK,
-} RequestType;
 
 #endif
