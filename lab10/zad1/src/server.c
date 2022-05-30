@@ -102,7 +102,7 @@ void *handleRegister(void *arguments){
     printInfo("SERVER", "stargin register thread");
 
     listen(server->local, 10);
-    liste(server->online, 10);
+    listen(server->online, 10);
 
     while(true){
         int client_descriptor, nickname_length;
@@ -120,7 +120,7 @@ void *handleRegister(void *arguments){
         }
 
         if(connection_type == CONN_NONE){
-            error("CONNECTION_ERROR", "server received incorrect type of connection");
+            // error("CONNECTION_ERROR", "server received incorrect type of connection");
             continue;
         }
 
@@ -135,12 +135,15 @@ void *handleRegister(void *arguments){
         Client *client = calloc(1, sizeof(Client *));
         client->descriptor = client_descriptor;
         client->connection = connection_type;
-        nickname_length = read(client_descriptor, client->nick, CLIENT_NICK_LENGTH);
-        client->nick[nickname_length] = 0;
+
+        nickname_length = read(client_descriptor, nickname, CLIENT_NICK_LENGTH);
+
+        client->nick = calloc(strlen(nickname) + 1, sizeof(char));
+        client->nick = nickname;
 
         pthread_mutex_lock(&mutex_client_register);
 
-        if(!clientExists(server->clients, client->nick)){
+        if(clientExists(server->clients, client->nick)){
             send(client_descriptor, "NICKNAME_TAKEN", strlen("NICKNAME_TAKEN") + 1, MSG_DONTWAIT);
             shutdown(client_descriptor, SHUT_RDWR);
             close(client_descriptor);
@@ -149,7 +152,7 @@ void *handleRegister(void *arguments){
         }
         
         registerClient(server, client);
-        send(client_descriptor, "ACCEPTED", strlen("ACCEPTED") + 1, MSG_DONTWAIT);
+        send(client_descriptor, "ACCEPTED", strlen("ACCEPTED") + 1, MSG_DONTWAIT);  
 
         char message[100];
 
@@ -165,7 +168,7 @@ void *handleGame(void *arguments){
 }
 
 
-void shutdownServer(Server *server){
+void handleQuit(){
     printInfo("SERVER", "shutdown");
     close(server->local);
     close(server->online);
@@ -174,7 +177,7 @@ void shutdownServer(Server *server){
     free(server);
 }
 
-bool registerClient(Server *server, Client *client){
+void registerClient(Server *server, Client *client){
     struct sockaddr address;
     client->address = address;
     client->id = getFreeRegisterSpot(server);
@@ -186,6 +189,7 @@ bool registerClient(Server *server, Client *client){
 
 // ---- Main program
 int main(int argc, char **argv){
+    atexit(handleQuit);
 
     // Validation of arguments
     if(argc != 3){
@@ -201,13 +205,12 @@ int main(int argc, char **argv){
     pthread_t register_thread;
     pthread_t games_thread;
 
+
     pthread_create(&register_thread, NULL, handleRegister, NULL);
     pthread_create(&games_thread, NULL, handleGame, NULL);
 
     pthread_join(register_thread, NULL);
     pthread_join(games_thread, NULL);
-
-    shutdownServer(server);
 
     return RETURN_SUCCESS;
 }

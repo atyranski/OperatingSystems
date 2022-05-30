@@ -11,9 +11,12 @@ CLIENT_PATH = src/client.c
 
 # --- Iput values
 PORT = 50000
-SOCKET_PATH = ./socket
+SOCKET_PATH = socket
+CLIENT_NICK = Bolek
+CONN_TYPE = online
+ADDRESS = 127.0.0.1
 
-recompile: clean compile_lib compile_server compile_client run
+recompile: clean compile_lib compile_server compile_client server_run
 
 compile_lib:
 	$(CC) $(CFLAGS) $(LIB_PATH) -o libs/$(LIB_NAME).o
@@ -31,6 +34,10 @@ clean:
 	rm -f libs/libprintutils.a
 	rm -f bin/main
 
-run:
+server_run:
 	clear
 	./bin/server $(PORT) $(SOCKET_PATH)
+
+client_run:
+	clear
+	./bin/client $(CLIENT_NICK) $(CONN_TYPE) $(ADDRESS) $(PORT)

@@ -15,11 +15,13 @@
 #include <time.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <signal.h>
 #include "printutils.h"
 
 #define UNIX_PATH_MAX 108
 #define MAX_CLIENTS_REGISTERED 4
 #define CLIENT_NICK_LENGTH 16
+#define RESPONSE_SIZE 128
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
@@ -41,7 +43,7 @@ typedef enum ConnectionType{
 typedef struct{
     int id;
     int descriptor;
-    char nick[CLIENT_NICK_LENGTH];
+    char *nick;
     char symbol;
     ConnectionType connection;
     struct sockaddr address;
