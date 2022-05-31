@@ -1,6 +1,8 @@
 #include "configs.h"
 
 const char *nickname;
+const char symbol;
+char winner;
 ConnectionType connection_type;
 const char *socket_path;
 int port;
@@ -8,6 +10,9 @@ const char *server_address;
 int connection_descriptor;
 struct sockaddr_un local_address;
 struct sockaddr_in online_address;
+bool isPlaying = false;
+bool isFirst;
+char *table;
 
 // Utility
 ConnectionType getConnectionType(const char *type){
@@ -78,6 +83,117 @@ void connectToServer(ConnectionType type){
 
 
 // Routine
+void drawTable(){
+    printf("\n\t%c\t|\t%c\t|\t%c\n", table[0], table[1], table[2]);
+    printf("_________________________________________________\n\n");
+    printf("\t%c\t|\t%c\t|\t%c\n", table[3], table[4], table[5]);
+    printf("_________________________________________________\n\n");
+    printf("\t%c\t|\t%c\t|\t%c\n\n", table[6], table[7], table[8]);
+}
+
+void initializeTable(){
+    table = calloc(9, sizeof(char));
+    for(int i=0; i<9; i++) table[i] = ((int) (i+1)) + '0';
+}
+
+bool gameEnded(){
+    for(int i=0; i<3; i++){
+        if(table[i*3] != ' ' &&
+            table[i*3] == table[i*3 + 1] &&
+            table[i*3 + 1] == table [i*3+2]){
+                winner = table[i*3];
+                return true;
+            }
+        
+        if(table[i] != ' ' &&
+            table[i] == table[i+3] &&
+            table[i+3] == table[i+6]){
+                winner = table[i];
+                return true;
+        }
+    }
+
+    if(table[0] == table[4]
+        && table[4] == table[8]){
+        winner = table[0];
+        return true;
+    }
+
+    for(int i=0; i<9; i++){
+        if(table[i] == ' '){
+            winner = 'K'; // K - keep playing
+            return false;
+        }
+    }
+
+    winner = 'N'; // N - not emerged
+    return true;
+}
+
+void printWinner(){
+    if(winner == symbol){
+        printInfo("VICTORY", "you won the game");
+        return;
+    }
+
+    if(winner == 'N') {
+        printOper("DRAW", "noone of you won the game");
+        return;
+    }
+
+    error("DEFEAT", "you lose the game");
+}
+
+bool checkVictoryConditions(){
+    if(gameEnded()){
+        printInfo("GAME", "game ended");
+        write(connection_descriptor, "GAME_ENDED", strlen("GAME_ENDED") + 1);
+        printWinner();
+        isPlaying = false;
+        return true;
+    }
+    return false;
+}
+
+void getMove(){
+    while(true){
+        int area;
+        print("Choose area (1-9): ");
+        scanf("%d", &area);
+
+        if(area < 1 || area > 9){
+            error("WRONG_AREA", "you've picked area outside of range");
+            continue;
+        }
+
+        if(table[area-1] != ' '){
+            error("TAKEN_AREA", "you've picked area already taken");
+            continue;
+        }
+
+        table[area-1] = symbol;
+        break;;
+    }
+}
+
+void gameRoutine(){
+    while(true){
+        if(!isFirst){
+            printOper("ENEMY", "other player made a move");
+            drawTable();
+
+            if(checkVictoryConditions()) break;
+
+            getMove();
+            char body_table[9];
+            strcpy(body_table, table);
+            write(connection_descriptor, table, strlen(body_table) + 1);
+
+            if(checkVictoryConditions()) break;
+        }
+    }
+}
+
 void run(){
     char response[RESPONSE_SIZE];
     int response_length;
@@ -119,8 +235,13 @@ void run(){
             continue;
         }
 
-        
+        isPlaying = true;
+        strcpy(symbol, response[0]);
+        initializeTable();
+        isFirst = (symbol == '0'); // true
 
+        printInfo("SYMBOL", symbol);
+        gameRoutine();
     }
 }
 
