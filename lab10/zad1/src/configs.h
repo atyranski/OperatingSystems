@@ -22,6 +22,8 @@
 #define MAX_CLIENTS_REGISTERED 4
 #define CLIENT_NICK_LENGTH 16
 #define RESPONSE_SIZE 128
+#define REQUEST_SIZE 128
+#define CHECK_RESPONSE_INTERVAL 100
 
 // ---- Return codes
 #define RETURN_SUCCESS 0
@@ -44,6 +46,7 @@ typedef struct{
     int id;
     int descriptor;
     char *nick;
+    char *enemy;
     char symbol;
     ConnectionType connection;
     struct sockaddr address;

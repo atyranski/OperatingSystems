@@ -10,6 +10,17 @@ pthread_mutex_t mutex_client_register = PTHREAD_MUTEX_INITIALIZER;
 
 
 // Utilities
+int getTime(){
+    struct timespec time;
+    clock_gettime(1, &time);
+    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
+}
+
+bool timeToCheckResponse(int time){
+    if(getTime() - time > CHECK_RESPONSE_INTERVAL) return true;
+    return false;
+}
+
 int getFreeRegisterSpot(Server *server){
     for(int i=0; i<MAX_CLIENTS_REGISTERED; i++){
         if(server->clients[i] == NULL) return i;
@@ -32,6 +43,13 @@ bool clientExists(Server *server, char *nickname){
     return false;
 }
 
+Client *getByName(Client **clients, int amount, char *nick){
+    for(int i=0; i<amount; i++) if(clients[i]->nick == nick) return clients[i];
+}
+
+void removeClient(Client **clients, int amount, char *nick){
+    for(int i=0; i<amount; i++) if(clients[i]->nick == nick) clients[i] = NULL;
+}
 
 // Server Initialization
 int createLocalServer(char *socket_path){
@@ -89,8 +107,10 @@ Server *createServer(int port, char *socket_path){
     server->local = local_descriptor;
     server->online = online_descriptor;
     server->clients = calloc(MAX_CLIENTS_REGISTERED, sizeof(Client));
+        for(int i=0; i<MAX_CLIENTS_REGISTERED; i++) server->clients[i] = NULL;
     server->clients_amount = 0;
-    server->games = calloc(MAX_CLIENTS_REGISTERED/2, sizeof(Client));
+    server->games = calloc(MAX_CLIENTS_REGISTERED/2, sizeof(Game));
+        for(int i=0; i<MAX_CLIENTS_REGISTERED/2; i++) server->games[i] = NULL;
     server->games_amount = 0;
 
     return server;
@@ -164,7 +184,76 @@ void *handleRegister(void *arguments){
 }
 
 void *handleGame(void *arguments){
+    char request[REQUEST_SIZE];
+    int request_length;
+    int checkTimer = getTime();
+    
+    while(true){
+        pthread_mutex_lock(&mutex_client_register);
+        
+        for(int i=0; i<MAX_CLIENTS_REGISTERED; i++){
+            if(server->clients[i] == NULL) continue;
 
+            Client *client = server->clients[i];
+
+            if(client->enemy != NULL){
+                int request_length = recv(client->descriptor, request, REQUEST_SIZE, MSG_DONTWAIT);
+
+                if(request_length > 0){
+                    request[request_length] = 0;
+
+                    Client *enemy = getByName(server->clients, server->clients_amount, client->enemy);
+
+                    if(strcmp(request, "GAME_ENDED") == 0){
+                        client->enemy = NULL;
+                        break;
+                    }
+                    
+                    if(strcmp(request, "QUIT") == 0){
+                        send(enemy->descriptor, request, REQUEST_SIZE, MSG_DONTWAIT);
+
+                        client->enemy = NULL;
+                        enemy->enemy = NULL;
+
+                        shutdown(client->descriptor, SHUT_RDWR);
+                        close(client->descriptor);
+
+                        removeClient(server->clients, server->clients_amount, client->nick);
+                        break;
+                    }
+
+                    if(strcmp(request, "CHECK") == 0){
+
+                    } else {
+                        char message[100];
+
+                        sprintf(message, "client with id#%d is not responding so server remove him", client->id);
+                        printInfo("NOT_RESPONDING", message);
+
+                        client->enemy = NULL;
+                        enemy->enemy = NULL;
+
+                        shutdown(client->descriptor, SHUT_RDWR);
+                        close(client->descriptor);
+
+                        removeClient(server->clients, server->clients_amount, client->nick);
+                    }
+                }
+            } else {
+
+            }
+        }      
+        
+        if(timeToCheckResponse(checkTimer)){
+            pthread_mutex_lock(&mutex_client_register);
+
+            for(int i=0; i<MAX_CLIENTS_REGISTERED i++){
+                if(server->clients[i] == NULL) continue;
+            }
+
+            checkTimer = getTime();
+        }  
+    }
 }
 
 

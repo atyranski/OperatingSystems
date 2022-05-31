@@ -177,6 +177,9 @@ void getMove(){
 }
 
 void gameRoutine(){
+    char response[RESPONSE_SIZE];
+    int response_length;
+
     while(true){
         if(!isFirst){
             printOper("ENEMY", "other player made a move");
@@ -190,7 +193,27 @@ void gameRoutine(){
             write(connection_descriptor, table, strlen(body_table) + 1);
 
             if(checkVictoryConditions()) break;
+        } 
+
+        if(isFirst){
+            isFirst = false;
+            printInfo("WAIT", "enemy is making his/her move. Wait for him to make your move");
         }
+
+        response_length = read(connection_descriptor, response, RESPONSE_SIZE);
+
+        if(response_length < 1) {
+            printOper("DISCONNECTING", "server closed connections");
+            exit(1);
+        }
+
+        if(strcmp(response, "DISCONNECT") == 0){
+            printOper("ENEMY_QUIT", "your enemy left the server and abandoned this game");
+            isPlaying = false;
+            break;
+        }
+
+        strncpy(table, response, 9);
     }
 }
 
