@@ -1,305 +1,263 @@
 #include "configs.h"
 
+Client *client_list;
+pthread_mutex_t mutex_clients = PTHREAD_MUTEX_INITIALIZER;
+
+struct sockaddr_in socket_online;
+struct sockaddr_un socket_local;
+
+int descriptor_local;
+int descriptor_online;
 int port;
-char *socket_path;
+char *local_path;
+int clients_amount;
 
-int descriptor;
-Server *server;
-int waiting_for_enemy = -1;
-pthread_mutex_t mutex_client_register = PTHREAD_MUTEX_INITIALIZER;
+void *handleRegister(void *args){
+    printInfo("SERVER_START", "listening descriptors");
+    listen(descriptor_local, 12);
+    listen(descriptor_online, 12);
 
-
-// Utilities
-int getTime(){
-    struct timespec time;
-    clock_gettime(1, &time);
-    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
-}
-
-bool timeToCheckResponse(int time){
-    if(getTime() - time > CHECK_RESPONSE_INTERVAL) return true;
-    return false;
-}
-
-int getFreeRegisterSpot(Server *server){
-    for(int i=0; i<MAX_CLIENTS_REGISTERED; i++){
-        if(server->clients[i] == NULL) return i;
-    }
-    return -1;
-}
-
-int getFreeGame(Game **games){
-    for(int i=0; i<MAX_CLIENTS_REGISTERED/2; i++){
-        if(games[i] == NULL) return i;
-    }
-    return -1;
-}
-
-bool clientExists(Server *server, char *nickname){
-    for(int i=0; i<server->clients_amount; i++){
-        if(strcmp(server->clients[i]->nick, nickname) == 0) return true;
-    }
-    
-    return false;
-}
-
-Client *getByName(Client **clients, int amount, char *nick){
-    for(int i=0; i<amount; i++) if(clients[i]->nick == nick) return clients[i];
-}
-
-void removeClient(Client **clients, int amount, char *nick){
-    for(int i=0; i<amount; i++) if(clients[i]->nick == nick) clients[i] = NULL;
-}
-
-// Server Initialization
-int createLocalServer(char *socket_path){
-    int descriptor;
-    
-    if ((descriptor = socket(AF_LOCAL, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1) {
-        error("ERROR", "local socket descriptor");
-        exit(1);
-    }
-
-    struct sockaddr_un address;
-    address.sun_family = AF_LOCAL;
-    strcpy(address.sun_path, socket_path);
-
-    if(bind(descriptor, (struct sockaddr*) &address, sizeof(address)) == -1){
-        error("ERROR", "local server binding problem");
-        exit(1);
-    }
-
-    if(remove(socket_path) == -1 && errno != ENOENT){
-        error("ERROR", "removing existing local socket problem");
-        exit(1);
-    }
-
-    return descriptor;
-}
-
-int createOnlineServer(int port){
-    int descriptor;
-    
-    if ((descriptor = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1) {
-        error("ERROR", "local socket descriptor");
-        exit(1);
-    }
-
-    struct sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_port = htons(port);
-    address.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if(bind(descriptor, (struct sockaddr*) &address, sizeof(address)) == -1){
-        error("ERROR", "online server binding problem");
-        exit(1);
-    }
-
-    return descriptor;
-}
-
-Server *createServer(int port, char *socket_path){
-    int local_descriptor = createLocalServer(socket_path);
-    int online_descriptor = createOnlineServer(port);
-    int epoll;
-
-    Server *server = calloc(1, sizeof(Server));
-    server->local = local_descriptor;
-    server->online = online_descriptor;
-    server->clients = calloc(MAX_CLIENTS_REGISTERED, sizeof(Client));
-        for(int i=0; i<MAX_CLIENTS_REGISTERED; i++) server->clients[i] = NULL;
-    server->clients_amount = 0;
-    server->games = calloc(MAX_CLIENTS_REGISTERED/2, sizeof(Game));
-        for(int i=0; i<MAX_CLIENTS_REGISTERED/2; i++) server->games[i] = NULL;
-    server->games_amount = 0;
-
-    return server;
-}
-
-
-// Server Actions
-void *handleRegister(void *arguments){
-    printInfo("SERVER", "stargin register thread");
-
-    listen(server->local, 10);
-    listen(server->online, 10);
-
-    while(true){
-        int client_descriptor, nickname_length;
+    while (true){
         char nickname[CLIENT_NICK_LENGTH];
-        ConnectionType connection_type = CONN_NONE;
+        int client_descriptor = -1;
+        ConnectionType connection_type = NONE;
 
-        if((client_descriptor = accept(server->local, NULL, NULL)) != -1){
+        if ((client_descriptor = accept(descriptor_online, NULL, NULL)) != -1) {
             printOper("REGISTER", "connection type: local");
-            connection_type = CONN_LOCAL;
-        }
+            connection_type = ONLINE;
 
-        if((client_descriptor = accept(server->online, NULL, NULL)) != -1){
+        } else if ((cliDesc = accept(descriptor_local, NULL, NULL)) != -1) {
             printOper("REGISTER", "connection type: online");
-            connection_type = CONN_ONLINE;
+            connection_type = LOCAL;
         }
 
-        if(connection_type == CONN_NONE){
-            // error("CONNECTION_ERROR", "server received incorrect type of connection");
-            continue;
+        if (connection_type != NONE) {
+            int nickname_length = read(client_descriptor, nickname, CLIENT_NICK_LENGTH);
+            nickname[nickname_length] = 0;
+
+            pthread_mutex_lock(&mutex_clients);
+
+            if (findClient(client_list, nickname) != NULL) {
+                send(client_descriptor, "NICKNAME_TAKEN", strlen("NICKNAME_TAKEN") + 1, MSG_DONTWAIT);
+                shutdown(client_descriptor, SHUT_RDWR);
+                close(client_descriptor);
+
+            } else if(clients_amount == MAX_CLIENTS_REGISTERED){
+                error("SERVER_FULL", "cannot register any other client");
+                send(client_descriptor, "SERVER_FULL", strlen("SERVER_FULL") + 1, MSG_DONTWAIT);
+                shutdown(client_descriptor, SHUT_RDWR);
+                close(client_descriptor);
+
+            } else {
+                char message[100];
+                struct sockaddr client_address;
+
+                addClient(&client_list, client_descriptor, connection_type, nickname, client_address);
+                send(client_descriptor, "ACCEPTED", strlen("ACCEPTED") + 1, MSG_DONTWAIT);
+
+                sprintf(message, 'successfully registered client with nickname: %s', nickname);
+                printInfo("REGISTER", message);
+            }
+
+            clients_amount++;
+            pthread_mutex_unlock(&mutex_clients);
         }
-
-        if(server->clients_amount == MAX_CLIENTS_REGISTERED){
-            error("SERVER_FULL", "cannot register any other client");
-            send(client_descriptor, "SERVER_FULL", strlen("SERVER_FULL") + 1, MSG_DONTWAIT);
-            shutdown(client_descriptor, SHUT_RDWR);
-            close(client_descriptor);
-            continue;
-        }
-
-        Client *client = calloc(1, sizeof(Client *));
-        client->descriptor = client_descriptor;
-        client->connection = connection_type;
-
-        nickname_length = read(client_descriptor, nickname, CLIENT_NICK_LENGTH);
-
-        client->nick = calloc(strlen(nickname) + 1, sizeof(char));
-        client->nick = nickname;
-
-        pthread_mutex_lock(&mutex_client_register);
-
-        if(clientExists(server->clients, client->nick)){
-            send(client_descriptor, "NICKNAME_TAKEN", strlen("NICKNAME_TAKEN") + 1, MSG_DONTWAIT);
-            shutdown(client_descriptor, SHUT_RDWR);
-            close(client_descriptor);
-            free(client);
-            continue;
-        }
-        
-        registerClient(server, client);
-        send(client_descriptor, "ACCEPTED", strlen("ACCEPTED") + 1, MSG_DONTWAIT);  
-
-        char message[100];
-
-        sprintf(message, "client with nickname %s registered", client->nick);
-        printInfo("SUCCESS", message);
-
-        pthread_mutex_unlock(&mutex_client_register);
-    }    
+    }
+    return NULL;
 }
 
-void *handleGame(void *arguments){
-    char request[REQUEST_SIZE];
-    int request_length;
-    int checkTimer = getTime();
-    
-    while(true){
-        pthread_mutex_lock(&mutex_client_register);
-        
-        for(int i=0; i<MAX_CLIENTS_REGISTERED; i++){
-            if(server->clients[i] == NULL) continue;
+void pairClients(){
+    char message[100];
+    char response[RESPONSE_SIZE];
+    Client *first;
+    Client *second;
 
-            Client *client = server->clients[i];
+    pthread_mutex_lock(&mutex_clients);
 
-            if(client->enemy != NULL){
-                int request_length = recv(client->descriptor, request, REQUEST_SIZE, MSG_DONTWAIT);
+    client = client_list;
+    while (client != NULL) {
+        if (client->enemy == NULL){
+            if (first == NULL) first = client;
+            else {
+                second = client;
+                break;
+            }
+        }
+        client = client->next;
+    }
 
-                if(request_length > 0){
-                    request[request_length] = 0;
+    if (first != NULL && second != NULL){
+        first->enemy = second->nickname;
+        second->enemy = first->nickname;
 
-                    Client *enemy = getByName(server->clients, server->clients_amount, client->enemy);
+        sprintf(response, "X: Starting game with %s\n", first->nickname);
+        send(second->descriptor, response, strlen(response) + 1, MSG_DONTWAIT);
 
-                    if(strcmp(request, "GAME_ENDED") == 0){
-                        client->enemy = NULL;
-                        break;
-                    }
-                    
-                    if(strcmp(request, "QUIT") == 0){
-                        send(enemy->descriptor, request, REQUEST_SIZE, MSG_DONTWAIT);
+        sprintf(response, "O: Starting game with %s\n", second->nickname);
+        send(first->descriptor, response, strlen(response) + 1, MSG_DONTWAIT);
 
-                        client->enemy = NULL;
+        sprinft(message, "starting game between: %s vs %s", first->nickname, second->nickname);
+        printInfo("GAME_START", message);
+    }
+
+    pthread_mutex_unlock(&mutex_clients);
+}
+
+void aliveCheck(int check_prev){
+    int check_now = getTime();
+    char response[RESPONSE_SIZE];
+
+    if (check_now - check_prev > CHECK_RESPONSE_INTERVAL){
+        pthread_mutex_lock(&mutex_clients);
+        client = client_list;
+
+        while (client != NULL){
+            if (client->enemy == NULL){
+                int request_length = send(client->descriptor, "CHECK", strlen("CHECK") + 1, MSG_DONTWAIT);
+
+                if (request_length == -1) client->check_attempts = CHECK_ATTEMPTS + 1;
+
+                client->check_attempts++;
+
+                if (recv(client->descriptor, response, RESPONSE_SIZE, MSG_DONTWAIT) > 0) {
+                    response[strlen("ALIVE")] = 0;
+
+                    if (strcmp(response, "ALIVE") == 0) client->check_attempts = 0;
+
+                } else if (client->check_attempts > CHECK_ATTEMPTS) {
+                    char message[100];
+
+                    sprintf(message, "client with nickname %s is not responding - quiting connection", client->nickname);
+                    printInfo("DISCONNECTING", message)l
+                    shutdown(client->descriptor, SHUT_RDWR);
+                    close(client->descriptor);
+                    removeClient(&client_list, client->nickname);
+                    continue;
+                }
+            }
+
+            client = client->next;
+        }
+
+        pthead_mutex_unlock(&mutex_clients);
+    }
+
+    return getTime();
+}
+
+void *handleGames(void *args) {
+    char response[RESPONSE_SIZE];
+    int check_prev = getTime();
+    int response_length;
+
+    while (true) {
+        pthread_mutex_lock(&mutex_clients);
+        Client *client = client_list;
+
+        while (client != NULL) {
+            if (client->enemy != NULL) {
+                response_length = recv(client->descriptor, response, RESPONSE_SIZE, MSG_DONTWAIT);
+
+                if (response_length > 0) {
+                    response[response_length] = 0;
+                    Client *enemy = findClient(client_list, client->enemy);
+
+                    if (strcmp(response, "GAME_END") == 0) client->enemy = NULL;
+                    else if (strcmp(response, "DISCONNECTION") == 0) {
                         enemy->enemy = NULL;
-
                         shutdown(client->descriptor, SHUT_RDWR);
                         close(client->descriptor);
+                        removeClient(&client_list, client->nickname);
 
-                        removeClient(server->clients, server->clients_amount, client->nick);
+                        send(enemy->descriptor, response, response_length, MSG_DONTWAIT);
                         break;
-                    }
 
-                    if(strcmp(request, "CHECK") == 0){
-
-                    } else {
+                    } else if (strcmp(response, "CHECK") == 0) client->check_attempts = 0;
+                    else {
                         char message[100];
 
-                        sprintf(message, "client with id#%d is not responding so server remove him", client->id);
-                        printInfo("NOT_RESPONDING", message);
-
-                        client->enemy = NULL;
-                        enemy->enemy = NULL;
-
-                        shutdown(client->descriptor, SHUT_RDWR);
-                        close(client->descriptor);
-
-                        removeClient(server->clients, server->clients_amount, client->nick);
+                        sprintf(message, "passing move from client %s to client %s", client->nickname, client->enemy)
+                        send(enemy->descriptor, response, response_length, MSG_DONTWAIT);
                     }
                 }
-            } else {
-
             }
-        }      
+            client = client->next;
+        }
+        pthread_mutex_unlock(&mutex_clients);
+
+        pairClients();
         
-        if(timeToCheckResponse(checkTimer)){
-            pthread_mutex_lock(&mutex_client_register);
-
-            for(int i=0; i<MAX_CLIENTS_REGISTERED i++){
-                if(server->clients[i] == NULL) continue;
-            }
-
-            checkTimer = getTime();
-        }  
+        check_prev = aliveCheck(check_prev);
     }
+    return NULL;
 }
-
 
 void handleQuit(){
-    printInfo("SERVER", "shutdown");
-    close(server->local);
-    close(server->online);
-    free(server->clients);
-    free(server->games);
-    free(server);
+    close(descriptor_online);
+    close(descriptor_local);
 }
 
-void registerClient(Server *server, Client *client){
-    struct sockaddr address;
-    client->address = address;
-    client->id = getFreeRegisterSpot(server);
-
-    server->clients[client->id] = client;    
-
-    return true;
-}
-
-// ---- Main program
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     atexit(handleQuit);
 
-    // Validation of arguments
+     // Validation of arguments
     if(argc != 3){
         error("INCORRECT_ARGUMENTS", "./bin/main [-port-] [-socket path-]");
         exit(1);
     }
 
-    port = atoi(argv[1]);
-    socket_path = argv[2];
+    client_list = NULL;
 
-    server = createServer(port, socket_path);
+    if ((port = atoi(argv[1])) == 0){
+        error("INCORRECT_CONNECTION_TYPE", "provide 'local' or 'online' as a connection type");
+        exit(1);
+    }
 
-    pthread_t register_thread;
-    pthread_t games_thread;
+    server_address = argv[2];
+    clients_amount = 0;
+
+    puts("Creating sockets...");
+
+    if ((descriptor_online = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1){
+        printf("Unable to create socket at port %d\n", port);
+        return 0;
+    }
+
+    if ((descriptor_local = socket(AF_LOCAL, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1) {
+        printf("Unable to create unix socket\n");
+        return 0;
+    }
+
+    puts("Binding sockets...");
+
+    unlink(local_path);
+    strcpy(socket_local.sun_path, local_path);
+    socket_local.sun_family = AF_LOCAL;
+
+    if (bind(descriptor_local, (struct sockaddr *) &socket_local, sizeof(socket_local)) == -1){
+        puts("Unable to bind local socket");
+        return 0;
+    }
+
+    socket_online.sin_family = AF_INET;
+    socket_online.sin_port = htons(port);
+    socket_online.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (bind(descriptor_online, (struct sockaddr *) &socket_online, sizeof(socket_online)) == -1){
+        puts("Unable to bind web socket");
+        return 0;
+    }
+
+    pthread_t listeningThread;
+    pthread_t handlingThread;
 
 
-    pthread_create(&register_thread, NULL, handleRegister, NULL);
-    pthread_create(&games_thread, NULL, handleGame, NULL);
+    pthread_create(&listeningThread, NULL, handleRegister, NULL);
 
-    pthread_join(register_thread, NULL);
-    pthread_join(games_thread, NULL);
+    pthread_create(&handlingThread, NULL, handleGames, NULL);
 
-    return RETURN_SUCCESS;
+    pthread_join(listeningThread, NULL);
+    pthread_join(handlingThread, NULL);
+
+    return 0;
 }

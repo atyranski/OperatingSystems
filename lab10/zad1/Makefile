@@ -12,7 +12,8 @@ CLIENT_PATH = src/client.c
 # --- Iput values
 PORT = 50000
 SOCKET_PATH = socket
-CLIENT_NICK = Bolek
+CLIENT1_NICK = Bolek
+CLIENT2_NICK = Lolek
 CONN_TYPE = online
 ADDRESS = 127.0.0.1
 
@@ -38,6 +39,10 @@ server_run:
 	clear
 	./bin/server $(PORT) $(SOCKET_PATH)
 
-client_run:
+client1_run:
 	clear
-	./bin/client $(CLIENT_NICK) $(CONN_TYPE) $(ADDRESS) $(PORT)
+	./bin/client $(CLIENT1_NICK) $(CONN_TYPE) $(ADDRESS) $(PORT)
+
+client2_run:
+	clear
+	./bin/client $(CLIENT2_NICK) $(CONN_TYPE) $(ADDRESS) $(PORT)
