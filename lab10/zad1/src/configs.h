@@ -67,7 +67,7 @@ void addClient(Client **client_list, int descriptor, ConnectionType connection_t
 
     Client values = {
         .nickname = client_nickname,
-        .connectedToName = NULL,
+        .enemy = NULL,
         .connection_type = connection_type,
         .descriptor = descriptor,
         .check_attempts = 0,
@@ -83,7 +83,7 @@ Client *findClient(Client *client_list, char *nickname){
 
     if (strcmp(client_list->nickname, nickname) == 0) return client_list;
 
-    return findClient(cliList->next, nickname);
+    return findClient(client_list->next, nickname);
 }
 
 void removeClient(Client **client_list, char *nickname){

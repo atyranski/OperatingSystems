@@ -8,16 +8,16 @@ char response[RESPONSE_SIZE];
 
 bool isPlaying = false;
 char *nickname;
-char *server_address = argv[3];
+char *server_address;
 int port;
 char symbol;
 ConnectionType connection_type;
 
 ConnectionType getConnectionType(const char *type){
-    if(strcmp("local", type) == 0) return CONN_LOCAL;
-    if(strcmp("online", type) == 0) return CONN_ONLINE;
+    if(strcmp("local", type) == 0) return LOCAL;
+    if(strcmp("online", type) == 0) return ONLINE;
     
-    return CONN_NONE;
+    return NONE;
 }
 
 void sendGameOver(void){
@@ -102,11 +102,11 @@ bool isEnd(char *table) {
             return false;
         case O_WIN:
             if(symbol == 'O') printInfo("VICTORY", "you've won");
-            else error("DEFEAT", "you've lose")
+            else error("DEFEAT", "you've lose");
             return true;
         case X_WIN:
             if(symbol == 'X') printInfo("VICTORY", "you've won");
-            else error("DEFEAT", "you've lose")
+            else error("DEFEAT", "you've lose");
             return true;
         case DRAW:
             printOper("DRAW", "none of you won");
@@ -159,7 +159,7 @@ void run(){
 
             while (true) {
                 if (!isFirst){
-                    printOper("ENEMY_MOVE", "other player has made a move:")
+                    printOper("ENEMY_MOVE", "other player has made a move:");
                     drawTable(table);
 
                     if (isEnd(table)){
@@ -265,14 +265,14 @@ int main(int argc, char **argv){
 
     connection_type = getConnectionType(argv[2]);
 
-    if(connection_type == CONN_NONE){
+    if(connection_type == NONE){
         error("INCORRECT_CONNECTION_TYPE", "provide 'local' or 'online' as a connection type");
         exit(1);
     }
 
     server_address = argv[3];
 
-    if(connection_type == CONN_ONLINE) port = atoi(argv[4]);
+    if(connection_type == ONLINE) port = atoi(argv[4]);
 
     connectToServer(argv);
     run();

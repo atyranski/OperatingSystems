@@ -9,7 +9,7 @@ struct sockaddr_un socket_local;
 int descriptor_local;
 int descriptor_online;
 int port;
-char *local_path;
+char *server_address;
 int clients_amount;
 
 void *handleRegister(void *args){
@@ -26,7 +26,7 @@ void *handleRegister(void *args){
             printOper("REGISTER", "connection type: local");
             connection_type = ONLINE;
 
-        } else if ((cliDesc = accept(descriptor_local, NULL, NULL)) != -1) {
+        } else if ((client_descriptor = accept(descriptor_local, NULL, NULL)) != -1) {
             printOper("REGISTER", "connection type: online");
             connection_type = LOCAL;
         }
@@ -66,7 +66,7 @@ void *handleRegister(void *args){
     return NULL;
 }
 
-void pairClients(){
+void pairClients(Client *client){
     char message[100];
     char response[RESPONSE_SIZE];
     Client *first;
@@ -90,10 +90,10 @@ void pairClients(){
         first->enemy = second->nickname;
         second->enemy = first->nickname;
 
-        sprintf(response, "X: Starting game with %s\n", first->nickname);
+        sprinft(response, "X: Starting game with %s\n", first->nickname);
         send(second->descriptor, response, strlen(response) + 1, MSG_DONTWAIT);
 
-        sprintf(response, "O: Starting game with %s\n", second->nickname);
+        sprinft(response, "O: Starting game with %s\n", second->nickname);
         send(first->descriptor, response, strlen(response) + 1, MSG_DONTWAIT);
 
         sprinft(message, "starting game between: %s vs %s", first->nickname, second->nickname);
@@ -103,7 +103,7 @@ void pairClients(){
     pthread_mutex_unlock(&mutex_clients);
 }
 
-void aliveCheck(int check_prev){
+int aliveCheck(int check_prev, Client *client){
     int check_now = getTime();
     char response[RESPONSE_SIZE];
 
@@ -128,11 +128,11 @@ void aliveCheck(int check_prev){
                     char message[100];
 
                     sprintf(message, "client with nickname %s is not responding - quiting connection", client->nickname);
-                    printInfo("DISCONNECTING", message)l
+                    printInfo("DISCONNECTING", message);
                     shutdown(client->descriptor, SHUT_RDWR);
                     close(client->descriptor);
                     removeClient(&client_list, client->nickname);
-                    continue;
+                    break;
                 }
             }
 
@@ -176,7 +176,7 @@ void *handleGames(void *args) {
                     else {
                         char message[100];
 
-                        sprintf(message, "passing move from client %s to client %s", client->nickname, client->enemy)
+                        sprintf(message, "passing move from client %s to client %s", client->nickname, client->enemy);
                         send(enemy->descriptor, response, response_length, MSG_DONTWAIT);
                     }
                 }
@@ -185,9 +185,9 @@ void *handleGames(void *args) {
         }
         pthread_mutex_unlock(&mutex_clients);
 
-        pairClients();
+        pairClients(client);
         
-        check_prev = aliveCheck(check_prev);
+        check_prev = aliveCheck(check_prev, client);
     }
     return NULL;
 }
@@ -216,8 +216,6 @@ int main(int argc, char **argv) {
     server_address = argv[2];
     clients_amount = 0;
 
-    puts("Creating sockets...");
-
     if ((descriptor_online = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1){
         printf("Unable to create socket at port %d\n", port);
         return 0;
@@ -228,10 +226,8 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    puts("Binding sockets...");
-
-    unlink(local_path);
-    strcpy(socket_local.sun_path, local_path);
+    unlink(server_address);
+    strcpy(socket_local.sun_path, server_address);
     socket_local.sun_family = AF_LOCAL;
 
     if (bind(descriptor_local, (struct sockaddr *) &socket_local, sizeof(socket_local)) == -1){
